@@ -1,0 +1,286 @@
+[2024-11-10T22:46:04.584+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-11-10T22:46:04.597+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data scheduled__2024-11-09T21:30:00+00:00 [queued]>
+[2024-11-10T22:46:04.600+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data scheduled__2024-11-09T21:30:00+00:00 [queued]>
+[2024-11-10T22:46:04.600+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2024-11-10T22:46:04.605+0000] {taskinstance.py:2330} INFO - Executing <Task(_PythonDecoratedOperator): load_stock_data> on 2024-11-09 21:30:00+00:00
+[2024-11-10T22:46:04.610+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=1503) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2024-11-10T22:46:04.609+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'Stock_Data_ETL', 'load_stock_data', 'scheduled__2024-11-09T21:30:00+00:00', '--job-id', '148', '--raw', '--subdir', 'DAGS_FOLDER/FinanceDataAnalytics_ETL_Pair9.ipynb.py', '--cfg-path', '/tmp/tmp7k4kkia4']
+[2024-11-10T22:46:04.611+0000] {standard_task_runner.py:91} INFO - Job 148: Subtask load_stock_data
+[2024-11-10T22:46:04.611+0000] {standard_task_runner.py:63} INFO - Started process 1506 to run task
+[2024-11-10T22:46:04.630+0000] {task_command.py:426} INFO - Running <TaskInstance: Stock_Data_ETL.load_stock_data scheduled__2024-11-09T21:30:00+00:00 [running]> on host 2538ecb7b4d3
+[2024-11-10T22:46:04.675+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='shatayu.thakur@sjsu.edu' AIRFLOW_CTX_DAG_OWNER='Pair 9' AIRFLOW_CTX_DAG_ID='Stock_Data_ETL' AIRFLOW_CTX_TASK_ID='load_stock_data' AIRFLOW_CTX_EXECUTION_DATE='2024-11-09T21:30:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2024-11-09T21:30:00+00:00'
+[2024-11-10T22:46:04.676+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-11-10T22:46:04.680+0000] {base.py:84} INFO - Using connection ID 'snowflake_conn' for task execution.
+[2024-11-10T22:46:04.681+0000] {connection.py:399} INFO - Snowflake Connector for Python Version: 3.10.0, Python Version: 3.12.3, Platform: Linux-6.10.11-linuxkit-aarch64-with-glibc2.36
+[2024-11-10T22:46:04.681+0000] {connection.py:1239} INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+[2024-11-10T22:46:05.554+0000] {cursor.py:1149} INFO - Number of results in first chunk: 1
+[2024-11-10T23:13:53.709+0000] {cursor.py:1149} INFO - Number of results in first chunk: 1
+[2024-11-10T23:13:53.710+0000] {logging_mixin.py:188} INFO - Target Table Initialized and Ready to Store Data from ETL
+[2024-11-10T23:13:53.711+0000] {logging_mixin.py:188} INFO - Loading Apple stock data...
+[2024-11-11T16:45:16.895+0000] {connection.py:762} INFO - closed
+[2024-11-11T16:45:17.252+0000] {connection.py:768} INFO - No async queries seem to be running, deleting session
+[2024-11-11T16:45:17.608+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-11-11T16:45:17.610+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 755, in _post_request
+    ret = self._renew_session()
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 529, in _renew_session
+    return self._token_request(REQUEST_TYPE_RENEW)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 584, in _token_request
+    raise ReauthenticationRequest(
+snowflake.connector.network.ReauthenticationRequest: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 138, in load_stock_data
+    insert_stock_data(apple_results, "AAPL")
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 134, in insert_stock_data
+    cursor.execute(merge_sql)
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 758, in _post_request
+    raise ex.cause
+snowflake.connector.errors.ProgrammingError: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 755, in _post_request
+    ret = self._renew_session()
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 529, in _renew_session
+    return self._token_request(REQUEST_TYPE_RENEW)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 584, in _token_request
+    raise ReauthenticationRequest(
+snowflake.connector.network.ReauthenticationRequest: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/decorators/base.py", line 265, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 147, in load_stock_data
+    cursor.execute("ROLLBACK;")  # Roll back the transaction in case of any error to preserve the former contents
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 758, in _post_request
+    raise ex.cause
+snowflake.connector.errors.ProgrammingError: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+[2024-11-11T16:45:17.623+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=Stock_Data_ETL, task_id=load_stock_data, run_id=scheduled__2024-11-09T21:30:00+00:00, execution_date=20241109T213000, start_date=20241110T224604, end_date=20241111T164517
+[2024-11-11T16:45:17.637+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/utils/email.py:154 RemovedInAirflow3Warning: Fetching SMTP credentials from configuration variables will be deprecated in a future release. Please set credentials using a connection instead.
+[2024-11-11T16:45:17.637+0000] {configuration.py:1050} WARNING - section/key [smtp/smtp_user] not found in config
+[2024-11-11T16:45:17.637+0000] {email.py:271} INFO - Email alerting: attempt 1
+[2024-11-11T16:45:17.641+0000] {configuration.py:1050} WARNING - section/key [smtp/smtp_user] not found in config
+[2024-11-11T16:45:17.641+0000] {email.py:271} INFO - Email alerting: attempt 1
+[2024-11-11T16:45:17.641+0000] {taskinstance.py:879} ERROR - Failed to send email to: ['shatayu.thakur@sjsu.edu']
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 755, in _post_request
+    ret = self._renew_session()
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 529, in _renew_session
+    return self._token_request(REQUEST_TYPE_RENEW)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 584, in _token_request
+    raise ReauthenticationRequest(
+snowflake.connector.network.ReauthenticationRequest: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 138, in load_stock_data
+    insert_stock_data(apple_results, "AAPL")
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 134, in insert_stock_data
+    cursor.execute(merge_sql)
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 758, in _post_request
+    raise ex.cause
+snowflake.connector.errors.ProgrammingError: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 755, in _post_request
+    ret = self._renew_session()
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 529, in _renew_session
+    return self._token_request(REQUEST_TYPE_RENEW)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 584, in _token_request
+    raise ReauthenticationRequest(
+snowflake.connector.network.ReauthenticationRequest: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2479, in _run_raw_task
+    self._execute_task_with_callbacks(context, test_mode, session=session)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2676, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2701, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/decorators/base.py", line 265, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 147, in load_stock_data
+    cursor.execute("ROLLBACK;")  # Roll back the transaction in case of any error to preserve the former contents
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 758, in _post_request
+    raise ex.cause
+snowflake.connector.errors.ProgrammingError: 390114 (08001): None: Authentication token has expired.  The user must authenticate again.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 1063, in _email_alert
+    send_email(task.email, subject, html_content)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 80, in send_email
+    return backend(
+           ^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 154, in send_email_smtp
+    send_mime_email(e_from=mail_from, e_to=recipients, mime_msg=msg, conn_id=conn_id, dryrun=dryrun)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 273, in send_mime_email
+    smtp_conn = _get_smtp_connection(smtp_host, smtp_port, smtp_timeout, smtp_ssl)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 317, in _get_smtp_connection
+    return smtplib.SMTP(host=host, port=port, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 255, in __init__
+    (code, msg) = self.connect(host, port)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 341, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 312, in _get_socket
+    return socket.create_connection((host, port), timeout,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 852, in create_connection
+    raise exceptions[0]
+  File "/usr/local/lib/python3.12/socket.py", line 837, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 877, in _handle_failure
+    task_instance.email_alert(error, failure_context["task"])
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3163, in email_alert
+    _email_alert(task_instance=self, exception=exception, task=task)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 1065, in _email_alert
+    send_email(task.email, subject, html_content_err)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 80, in send_email
+    return backend(
+           ^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 154, in send_email_smtp
+    send_mime_email(e_from=mail_from, e_to=recipients, mime_msg=msg, conn_id=conn_id, dryrun=dryrun)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 273, in send_mime_email
+    smtp_conn = _get_smtp_connection(smtp_host, smtp_port, smtp_timeout, smtp_ssl)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 317, in _get_smtp_connection
+    return smtplib.SMTP(host=host, port=port, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 255, in __init__
+    (code, msg) = self.connect(host, port)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 341, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 312, in _get_socket
+    return socket.create_connection((host, port), timeout,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 852, in create_connection
+    raise exceptions[0]
+  File "/usr/local/lib/python3.12/socket.py", line 837, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+[2024-11-11T16:45:18.392+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 148 for task load_stock_data (390114 (08001): None: Authentication token has expired.  The user must authenticate again.; 1506)
+[2024-11-11T16:45:18.413+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2024-11-11T16:45:18.430+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-11-11T16:45:18.431+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

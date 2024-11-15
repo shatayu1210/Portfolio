@@ -1,0 +1,33 @@
+[2024-11-10T06:23:27.752+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-11-10T06:23:27.764+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: Stock_Data_ETL.trigger_stock_prediction manual__2024-11-10T06:22:04.324299+00:00 [queued]>
+[2024-11-10T06:23:27.768+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: Stock_Data_ETL.trigger_stock_prediction manual__2024-11-10T06:22:04.324299+00:00 [queued]>
+[2024-11-10T06:23:27.768+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2024-11-10T06:23:27.772+0000] {taskinstance.py:2330} INFO - Executing <Task(TriggerDagRunOperator): trigger_stock_prediction> on 2024-11-10 06:22:04.324299+00:00
+[2024-11-10T06:23:27.778+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=459) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2024-11-10T06:23:27.777+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'Stock_Data_ETL', 'trigger_stock_prediction', 'manual__2024-11-10T06:22:04.324299+00:00', '--job-id', '125', '--raw', '--subdir', 'DAGS_FOLDER/FinanceDataAnalytics_ETL_Pair9.ipynb.py', '--cfg-path', '/tmp/tmpabz3g_oz']
+[2024-11-10T06:23:27.778+0000] {standard_task_runner.py:91} INFO - Job 125: Subtask trigger_stock_prediction
+[2024-11-10T06:23:27.778+0000] {standard_task_runner.py:63} INFO - Started process 462 to run task
+[2024-11-10T06:23:27.798+0000] {task_command.py:426} INFO - Running <TaskInstance: Stock_Data_ETL.trigger_stock_prediction manual__2024-11-10T06:22:04.324299+00:00 [running]> on host 2538ecb7b4d3
+[2024-11-10T06:23:27.834+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='shatayu.thakur@sjsu.edu' AIRFLOW_CTX_DAG_OWNER='Pair 9' AIRFLOW_CTX_DAG_ID='Stock_Data_ETL' AIRFLOW_CTX_TASK_ID='trigger_stock_prediction' AIRFLOW_CTX_EXECUTION_DATE='2024-11-10T06:22:04.324299+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-11-10T06:22:04.324299+00:00'
+[2024-11-10T06:23:27.835+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-11-10T06:23:27.861+0000] {trigger_dagrun.py:222} INFO - Waiting for Stock_Prediction on 2024-11-10 06:23:27.835219+00:00 to become allowed state ['success'] ...
+[2024-11-10T06:24:27.885+0000] {trigger_dagrun.py:222} INFO - Waiting for Stock_Prediction on 2024-11-10 06:23:27.835219+00:00 to become allowed state ['success'] ...
+[2024-11-10T06:25:27.907+0000] {trigger_dagrun.py:222} INFO - Waiting for Stock_Prediction on 2024-11-10 06:23:27.835219+00:00 to become allowed state ['success'] ...
+[2024-11-10T06:26:27.929+0000] {trigger_dagrun.py:235} INFO - Stock_Prediction finished with allowed state success
+[2024-11-10T06:26:27.932+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-11-10T06:26:27.946+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=Stock_Data_ETL, task_id=trigger_stock_prediction, run_id=manual__2024-11-10T06:22:04.324299+00:00, execution_date=20241110T062204, start_date=20241110T062327, end_date=20241110T062627
+[2024-11-10T06:26:27.951+0000] {taskinstance.py:1182} ERROR - Error when executing notify_success callback
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 1179, in _run_finished_callback
+    callback(context)
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 30, in notify_success
+    send_slack_notification(f"DAG {context['dag'].dag_id} succeeded!")
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 23, in send_slack_notification
+    webhook_url = Variable.get("SLACK_WEBHOOK_URL")  # Ensure SLACK_WEBHOOK_URL is set as an Airflow Variable
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/variable.py", line 143, in get
+    raise KeyError(f"Variable {key} does not exist")
+KeyError: 'Variable SLACK_WEBHOOK_URL does not exist'
+[2024-11-10T06:26:28.005+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-11-10T06:26:28.017+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-11-10T06:26:28.017+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

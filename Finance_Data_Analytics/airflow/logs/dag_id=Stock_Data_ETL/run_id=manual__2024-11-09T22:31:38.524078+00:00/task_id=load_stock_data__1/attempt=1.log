@@ -1,0 +1,1114 @@
+[2024-11-09T22:31:41.465+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-11-09T22:31:41.479+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data__1 manual__2024-11-09T22:31:38.524078+00:00 [queued]>
+[2024-11-09T22:31:41.484+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data__1 manual__2024-11-09T22:31:38.524078+00:00 [queued]>
+[2024-11-09T22:31:41.484+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2024-11-09T22:31:41.491+0000] {taskinstance.py:2330} INFO - Executing <Task(_PythonDecoratedOperator): load_stock_data__1> on 2024-11-09 22:31:38.524078+00:00
+[2024-11-09T22:31:41.496+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=1548) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2024-11-09T22:31:41.496+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'Stock_Data_ETL', 'load_stock_data__1', 'manual__2024-11-09T22:31:38.524078+00:00', '--job-id', '75', '--raw', '--subdir', 'DAGS_FOLDER/FinanceDataAnalytics_ETL_Pair9.ipynb.py', '--cfg-path', '/tmp/tmpaxv25f80']
+[2024-11-09T22:31:41.497+0000] {standard_task_runner.py:63} INFO - Started process 1554 to run task
+[2024-11-09T22:31:41.497+0000] {standard_task_runner.py:91} INFO - Job 75: Subtask load_stock_data__1
+[2024-11-09T22:31:41.521+0000] {task_command.py:426} INFO - Running <TaskInstance: Stock_Data_ETL.load_stock_data__1 manual__2024-11-09T22:31:38.524078+00:00 [running]> on host c8883bd7101d
+[2024-11-09T22:31:41.563+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='shatayu.thakur@sjsu.edu,pranav.raveendran@sjsu.edu' AIRFLOW_CTX_DAG_OWNER='Pair 9' AIRFLOW_CTX_DAG_ID='Stock_Data_ETL' AIRFLOW_CTX_TASK_ID='load_stock_data__1' AIRFLOW_CTX_EXECUTION_DATE='2024-11-09T22:31:38.524078+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-11-09T22:31:38.524078+00:00'
+[2024-11-09T22:31:41.565+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-11-09T22:31:41.569+0000] {base.py:84} INFO - Using connection ID 'snowflake_conn' for task execution.
+[2024-11-09T22:31:41.570+0000] {connection.py:399} INFO - Snowflake Connector for Python Version: 3.10.0, Python Version: 3.12.3, Platform: Linux-6.10.11-linuxkit-aarch64-with-glibc2.36
+[2024-11-09T22:31:41.572+0000] {connection.py:1239} INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+[2024-11-09T22:31:42.136+0000] {cursor.py:1149} INFO - Number of results in first chunk: 1
+[2024-11-09T22:31:42.137+0000] {logging_mixin.py:188} INFO - NVDA Stock Data Ready to Load on Snowflake. Beginning load...
+[2024-11-09T22:31:42.137+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-08' AS date, '148.7700' AS open, '149.7700' AS high, '146.2600' AS low, '147.6300' AS close, '175665830' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:43.161+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  1
+[2024-11-09T22:31:43.162+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-07' AS date, '146.3900' AS open, '148.9300' AS high, '146.1700' AS low, '148.8800' AS close, '207323303' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:43.676+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  2
+[2024-11-09T22:31:43.676+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-06' AS date, '142.9600' AS open, '146.4900' AS high, '141.9600' AS low, '145.6100' AS close, '242043945' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:44.495+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  3
+[2024-11-09T22:31:44.495+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-05' AS date, '137.4500' AS open, '140.3701' AS high, '137.3300' AS low, '139.9100' AS close, '160537373' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:45.104+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  4
+[2024-11-09T22:31:45.104+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-04' AS date, '137.2100' AS open, '138.9600' AS high, '135.5700' AS low, '136.0500' AS close, '187528173' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:46.027+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  5
+[2024-11-09T22:31:46.028+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-01' AS date, '134.7000' AS open, '137.3100' AS high, '134.5700' AS low, '135.4000' AS close, '207127838' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:46.642+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  6
+[2024-11-09T22:31:46.643+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-31' AS date, '137.6000' AS open, '137.6100' AS high, '132.1106' AS low, '132.7600' AS close, '270039641' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:47.254+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  7
+[2024-11-09T22:31:47.254+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-30' AS date, '139.5400' AS open, '140.3300' AS high, '136.8100' AS low, '139.3350' AS close, '179418082' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:48.179+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  8
+[2024-11-09T22:31:48.180+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-29' AS date, '140.2850' AS open, '142.2598' AS high, '138.9000' AS low, '141.2500' AS close, '157593634' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:48.795+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  9
+[2024-11-09T22:31:48.796+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-28' AS date, '143.0000' AS open, '143.1400' AS high, '140.0500' AS low, '140.5200' AS close, '173586745' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:49.925+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  10
+[2024-11-09T22:31:49.926+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-25' AS date, '140.9300' AS open, '144.1300' AS high, '140.8000' AS low, '141.5400' AS close, '205122109' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:50.433+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  11
+[2024-11-09T22:31:50.434+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-24' AS date, '140.8200' AS open, '141.3500' AS high, '138.4600' AS low, '140.4100' AS close, '172354888' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:51.458+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  12
+[2024-11-09T22:31:51.459+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-23' AS date, '142.0300' AS open, '142.4300' AS high, '137.4600' AS low, '139.5600' AS close, '285930038' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:52.380+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  13
+[2024-11-09T22:31:52.382+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-22' AS date, '142.9100' AS open, '144.4200' AS high, '141.7800' AS low, '143.5900' AS close, '226311589' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:52.973+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  14
+[2024-11-09T22:31:52.975+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-21' AS date, '138.1300' AS open, '143.7100' AS high, '138.0000' AS low, '143.7100' AS close, '264554514' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:53.609+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  15
+[2024-11-09T22:31:53.609+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-18' AS date, '138.6650' AS open, '138.9000' AS high, '137.2800' AS low, '138.0000' AS close, '176090184' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:54.222+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  16
+[2024-11-09T22:31:54.224+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-17' AS date, '139.3400' AS open, '140.8900' AS high, '136.8700' AS low, '136.9300' AS close, '306435921' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:54.807+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  17
+[2024-11-09T22:31:54.808+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-16' AS date, '133.9800' AS open, '136.6200' AS high, '131.5800' AS low, '135.7200' AS close, '264879720' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:55.345+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  18
+[2024-11-09T22:31:55.346+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-15' AS date, '137.8700' AS open, '138.5700' AS high, '128.7400' AS low, '131.6000' AS close, '377831021' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:56.374+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  19
+[2024-11-09T22:31:56.375+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-14' AS date, '136.4700' AS open, '139.6000' AS high, '136.3000' AS low, '138.0700' AS close, '232347668' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:57.090+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  20
+[2024-11-09T22:31:57.091+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-11' AS date, '134.0100' AS open, '135.7800' AS high, '133.6600' AS low, '134.8000' AS close, '170209474' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:57.602+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  21
+[2024-11-09T22:31:57.602+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-10' AS date, '131.9100' AS open, '135.0000' AS high, '131.0000' AS low, '134.8100' AS close, '242311337' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:58.416+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  22
+[2024-11-09T22:31:58.416+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-09' AS date, '134.1100' AS open, '134.5200' AS high, '131.3800' AS low, '132.6500' AS close, '246191612' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:59.238+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  23
+[2024-11-09T22:31:59.238+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-08' AS date, '130.2600' AS open, '133.4800' AS high, '129.4200' AS low, '132.8900' AS close, '285722485' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:31:59.857+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  24
+[2024-11-09T22:31:59.858+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-07' AS date, '124.9900' AS open, '130.6400' AS high, '124.9500' AS low, '127.7200' AS close, '346250233' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:00.463+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  25
+[2024-11-09T22:32:00.464+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-04' AS date, '124.9400' AS open, '125.0400' AS high, '121.8300' AS low, '124.9200' AS close, '244465552' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:01.700+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  26
+[2024-11-09T22:32:01.701+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-03' AS date, '120.9200' AS open, '124.3600' AS high, '120.3401' AS low, '122.8500' AS close, '277117973' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:02.608+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  27
+[2024-11-09T22:32:02.609+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-02' AS date, '116.4400' AS open, '119.3800' AS high, '115.1400' AS low, '118.8500' AS close, '221845887' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:03.331+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  28
+[2024-11-09T22:32:03.332+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-01' AS date, '121.7650' AS open, '122.4351' AS high, '115.7900' AS low, '117.0000' AS close, '302094485' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:03.952+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  29
+[2024-11-09T22:32:03.953+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-30' AS date, '118.3100' AS open, '121.5000' AS high, '118.1500' AS low, '121.4400' AS close, '227053651' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:04.456+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  30
+[2024-11-09T22:32:04.456+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-27' AS date, '123.9700' AS open, '124.0300' AS high, '119.2600' AS low, '121.4000' AS close, '271009175' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:05.135+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  31
+[2024-11-09T22:32:05.136+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-26' AS date, '126.8000' AS open, '127.6650' AS high, '121.8000' AS low, '124.0400' AS close, '302582868' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:05.791+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  32
+[2024-11-09T22:32:05.792+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-25' AS date, '122.0200' AS open, '124.9400' AS high, '121.6100' AS low, '123.5100' AS close, '284692948' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:06.613+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  33
+[2024-11-09T22:32:06.614+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-24' AS date, '116.5150' AS open, '121.8000' AS high, '115.3800' AS low, '120.8700' AS close, '354966772' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:07.182+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  34
+[2024-11-09T22:32:07.183+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-23' AS date, '116.5500' AS open, '116.9900' AS high, '114.8600' AS low, '116.2600' AS close, '206228490' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:07.607+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  35
+[2024-11-09T22:32:07.608+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-20' AS date, '117.0600' AS open, '118.6181' AS high, '115.3901' AS low, '116.0000' AS close, '382462428' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:08.123+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  36
+[2024-11-09T22:32:08.124+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-19' AS date, '117.3500' AS open, '119.6600' AS high, '117.2500' AS low, '117.8700' AS close, '293506438' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:08.967+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  37
+[2024-11-09T22:32:08.968+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-18' AS date, '115.8900' AS open, '117.7000' AS high, '113.2200' AS low, '113.3700' AS close, '310318937' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:09.608+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  38
+[2024-11-09T22:32:09.609+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-17' AS date, '118.1700' AS open, '118.8000' AS high, '114.8300' AS low, '115.5900' AS close, '231925876' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:10.539+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  39
+[2024-11-09T22:32:10.541+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-16' AS date, '116.7900' AS open, '118.1800' AS high, '114.3600' AS low, '116.7800' AS close, '248772308' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:11.580+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  40
+[2024-11-09T22:32:11.582+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-13' AS date, '119.0800' AS open, '119.9550' AS high, '117.6000' AS low, '119.1000' AS close, '238358328' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:12.097+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  41
+[2024-11-09T22:32:12.098+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-12' AS date, '116.8400' AS open, '120.7900' AS high, '115.3800' AS low, '119.1400' AS close, '367100496' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:13.152+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  42
+[2024-11-09T22:32:13.153+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-11' AS date, '109.3900' AS open, '117.1900' AS high, '107.4200' AS low, '116.9100' AS close, '441422370' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:14.199+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  43
+[2024-11-09T22:32:14.200+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-10' AS date, '107.8100' AS open, '109.4000' AS high, '104.9500' AS low, '108.1000' AS close, '268283736' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:15.211+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  44
+[2024-11-09T22:32:15.212+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-09' AS date, '104.8800' AS open, '106.5500' AS high, '103.6900' AS low, '106.4700' AS close, '273912015' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:15.824+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  45
+[2024-11-09T22:32:15.825+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-06' AS date, '108.0400' AS open, '108.1500' AS high, '100.9500' AS low, '102.8300' AS close, '413638098' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:16.455+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  46
+[2024-11-09T22:32:16.456+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-05' AS date, '104.9850' AS open, '109.6500' AS high, '104.7600' AS low, '107.2100' AS close, '306850696' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:17.365+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  47
+[2024-11-09T22:32:17.366+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-04' AS date, '105.4100' AS open, '113.2700' AS high, '104.1200' AS low, '106.2100' AS close, '368378810' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:17.968+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  48
+[2024-11-09T22:32:17.969+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-09-03' AS date, '116.0100' AS open, '116.2100' AS high, '107.2900' AS low, '108.0000' AS close, '477155100' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:18.635+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  49
+[2024-11-09T22:32:18.635+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-30' AS date, '119.5300' AS open, '121.7500' AS high, '117.2200' AS low, '119.3700' AS close, '333751583' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:19.212+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  50
+[2024-11-09T22:32:19.213+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-29' AS date, '121.3550' AS open, '124.4300' AS high, '116.7100' AS low, '117.5900' AS close, '453023305' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:19.972+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  51
+[2024-11-09T22:32:19.973+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-28' AS date, '128.1200' AS open, '128.3300' AS high, '122.6400' AS low, '125.6100' AS close, '448101115' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:20.517+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  52
+[2024-11-09T22:32:20.518+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-27' AS date, '125.0500' AS open, '129.2000' AS high, '123.8800' AS low, '128.3000' AS close, '303134573' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:21.377+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  53
+[2024-11-09T22:32:21.378+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-26' AS date, '129.5700' AS open, '131.2600' AS high, '124.3700' AS low, '126.4600' AS close, '331964672' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:22.173+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  54
+[2024-11-09T22:32:22.174+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-23' AS date, '125.8600' AS open, '129.6000' AS high, '125.2200' AS low, '129.3700' AS close, '323230332' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:22.790+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  55
+[2024-11-09T22:32:22.790+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-22' AS date, '130.0200' AS open, '130.7500' AS high, '123.1000' AS low, '123.7400' AS close, '376189076' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:23.408+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  56
+[2024-11-09T22:32:23.409+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-21' AS date, '127.3150' AS open, '129.3500' AS high, '126.6600' AS low, '128.5000' AS close, '257883572' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:24.124+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  57
+[2024-11-09T22:32:24.125+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-20' AS date, '128.4000' AS open, '129.8800' AS high, '125.8900' AS low, '127.2500' AS close, '300087415' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:24.838+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  58
+[2024-11-09T22:32:24.839+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-19' AS date, '124.2800' AS open, '130.0000' AS high, '123.4200' AS low, '130.0000' AS close, '318333577' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:25.347+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  59
+[2024-11-09T22:32:25.348+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-16' AS date, '121.9400' AS open, '125.0000' AS high, '121.1800' AS low, '124.5800' AS close, '302589872' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:26.277+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  60
+[2024-11-09T22:32:26.278+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-15' AS date, '118.7600' AS open, '123.2400' AS high, '117.4700' AS low, '122.8600' AS close, '318086673' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:27.399+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  61
+[2024-11-09T22:32:27.400+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-14' AS date, '118.5300' AS open, '118.6000' AS high, '114.0700' AS low, '118.0800' AS close, '339246407' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:28.097+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  62
+[2024-11-09T22:32:28.098+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-13' AS date, '112.4400' AS open, '116.2300' AS high, '111.5800' AS low, '116.1400' AS close, '312646660' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:28.818+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  63
+[2024-11-09T22:32:28.819+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-08-12' AS date, '106.3200' AS open, '111.0700' AS high, '106.2600' AS low, '109.0200' AS close, '325559870' AS volume, 'NVDA' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T22:32:29.507+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  64
+[2024-11-09T22:32:35.146+0000] {cursor.py:1149} INFO - Number of results in first chunk: 1
+[2024-11-09T22:32:35.148+0000] {logging_mixin.py:188} INFO - Number of Inserts that were expected to Execute:  64
+[2024-11-09T22:32:35.149+0000] {logging_mixin.py:188} INFO - Load complete for NVDA Stock Data
+[2024-11-09T22:32:35.149+0000] {python.py:237} INFO - Done. Returned value was: None
+[2024-11-09T22:32:35.150+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-11-09T22:32:35.164+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=Stock_Data_ETL, task_id=load_stock_data__1, run_id=manual__2024-11-09T22:31:38.524078+00:00, execution_date=20241109T223138, start_date=20241109T223141, end_date=20241109T223235
+[2024-11-09T22:32:35.218+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2024-11-09T22:32:35.236+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2024-11-09T22:32:35.238+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

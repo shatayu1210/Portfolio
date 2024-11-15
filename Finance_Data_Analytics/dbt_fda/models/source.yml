@@ -1,0 +1,36 @@
+sources:
+  - name: raw_data
+    database: dev
+    schema: raw_data
+    description: "Schema which stores raw tables (ETL)"
+    tables:
+      - name: stock_data
+        identifier: stock_data
+        description: "ETL Stock Price Data. Columns: date, open, high, low, close, volume, and symbol"
+      # - name: session_timestamp
+      #   identifier: session_timestamp
+      #   description: "Session data including timestamp"
+  
+  - name: analytics
+    database: dev
+    schema: analytics
+    description: "Schema which stores analytics tables (ELT)"
+    tables:
+      - name: obv_stock_summary
+        identifier: obv_stock_summary
+        description: "On-Balance Volume (OBV) data for APPLE and NVIDIA Stocks. Columns: date, symbol, close, and obv"
+      - name: fsi_stock_summary
+        identifier: fsi_stock_summary
+        description: "Forecast Stability Index (FSI) data for APPLE and NVIDIA Stocks for the predicted 7 days. Columns: record_type, symbol, date, close, avg_interval_width, stddev_interval_width, and fsi"
+      - name: bollinger_stock_summary
+        identifier: bollinger_stock_summary
+        description: "Bollinger Band Stock Summary for APPLE and NVIDIA Stocks (past 90 days). Columns: date, symbol, close, middle_band, upper_band, and lower_band"
+
+  - name: adhoc
+    database: dev
+    schema: adhoc
+    description: "Schema which stores forecast table"
+    tables:
+      - name: stock_data_forecast
+        identifier: stock_data_forecast
+        description: "Forecasted Stock Data (7 day). Columns: series, ts, forecast, lower_bound, upper_bound"

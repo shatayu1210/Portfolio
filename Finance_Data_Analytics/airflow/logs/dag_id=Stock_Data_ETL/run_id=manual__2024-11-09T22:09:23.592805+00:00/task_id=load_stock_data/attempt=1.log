@@ -1,0 +1,670 @@
+[2024-11-09T23:11:20.320+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2024-11-09T23:11:20.334+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data manual__2024-11-09T22:09:23.592805+00:00 [queued]>
+[2024-11-09T23:11:20.338+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: Stock_Data_ETL.load_stock_data manual__2024-11-09T22:09:23.592805+00:00 [queued]>
+[2024-11-09T23:11:20.339+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2024-11-09T23:11:20.348+0000] {taskinstance.py:2330} INFO - Executing <Task(_PythonDecoratedOperator): load_stock_data> on 2024-11-09 22:09:23.592805+00:00
+[2024-11-09T23:11:20.355+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=2831) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2024-11-09T23:11:20.355+0000] {standard_task_runner.py:63} INFO - Started process 2837 to run task
+[2024-11-09T23:11:20.355+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'Stock_Data_ETL', 'load_stock_data', 'manual__2024-11-09T22:09:23.592805+00:00', '--job-id', '85', '--raw', '--subdir', 'DAGS_FOLDER/FinanceDataAnalytics_ETL_Pair9.ipynb.py', '--cfg-path', '/tmp/tmpkpf0yhco']
+[2024-11-09T23:11:20.358+0000] {standard_task_runner.py:91} INFO - Job 85: Subtask load_stock_data
+[2024-11-09T23:11:20.383+0000] {task_command.py:426} INFO - Running <TaskInstance: Stock_Data_ETL.load_stock_data manual__2024-11-09T22:09:23.592805+00:00 [running]> on host c8883bd7101d
+[2024-11-09T23:11:20.428+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_EMAIL='shatayu.thakur@sjsu.edu,pranav.raveendran@sjsu.edu' AIRFLOW_CTX_DAG_OWNER='Pair 9' AIRFLOW_CTX_DAG_ID='Stock_Data_ETL' AIRFLOW_CTX_TASK_ID='load_stock_data' AIRFLOW_CTX_EXECUTION_DATE='2024-11-09T22:09:23.592805+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2024-11-09T22:09:23.592805+00:00'
+[2024-11-09T23:11:20.430+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2024-11-09T23:11:20.435+0000] {base.py:84} INFO - Using connection ID 'snowflake_conn' for task execution.
+[2024-11-09T23:11:20.436+0000] {connection.py:399} INFO - Snowflake Connector for Python Version: 3.10.0, Python Version: 3.12.3, Platform: Linux-6.10.11-linuxkit-aarch64-with-glibc2.36
+[2024-11-09T23:11:20.436+0000] {connection.py:1239} INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+[2024-11-09T23:11:20.910+0000] {cursor.py:1149} INFO - Number of results in first chunk: 1
+[2024-11-09T23:11:20.911+0000] {logging_mixin.py:188} INFO - AAPL Stock Data Ready to Load on Snowflake. Beginning load...
+[2024-11-09T23:11:20.912+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-08' AS date, '227.1700' AS open, '228.6600' AS high, '226.4050' AS low, '226.9600' AS close, '38328824' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-09T23:11:21.530+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  1
+[2024-11-09T23:11:21.531+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-07' AS date, '224.6250' AS open, '227.8750' AS high, '224.5700' AS low, '227.4800' AS close, '42137691' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:35.878+0000] {connectionpool.py:824} WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ReadTimeoutError("HTTPSConnectionPool(host='iybdxak-iyb27420.snowflakecomputing.com', port=443): Read timed out. (read timeout=60)")': /queries/01b843ef-0004-26cb-0000-000255f3b6a1/result?request_guid=bdb7d17d-09ce-4232-8f22-7113c9e1dcdf
+[2024-11-10T00:42:36.380+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  2
+[2024-11-10T00:42:36.380+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-06' AS date, '222.6100' AS open, '226.0650' AS high, '221.1900' AS low, '222.7200' AS close, '54561121' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:37.705+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  3
+[2024-11-10T00:42:37.706+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-05' AS date, '221.7950' AS open, '223.9500' AS high, '221.1400' AS low, '223.4500' AS close, '28111338' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:38.555+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  4
+[2024-11-10T00:42:38.555+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-04' AS date, '220.9900' AS open, '222.7900' AS high, '219.7100' AS low, '222.0100' AS close, '44944468' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:39.567+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  5
+[2024-11-10T00:42:39.568+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-11-01' AS date, '220.9650' AS open, '225.3500' AS high, '220.2700' AS low, '222.9100' AS close, '65276741' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:40.445+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  6
+[2024-11-10T00:42:40.445+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-31' AS date, '229.3400' AS open, '229.8300' AS high, '225.3700' AS low, '225.9100' AS close, '64370086' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:41.353+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  7
+[2024-11-10T00:42:41.355+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-30' AS date, '232.6100' AS open, '233.4700' AS high, '229.5500' AS low, '230.1000' AS close, '47070907' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:42.390+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  8
+[2024-11-10T00:42:42.392+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-29' AS date, '233.1000' AS open, '234.3250' AS high, '232.3200' AS low, '233.6700' AS close, '35417247' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:43.393+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  9
+[2024-11-10T00:42:43.394+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-28' AS date, '233.3200' AS open, '234.7300' AS high, '232.5500' AS low, '233.4000' AS close, '36087134' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:43.972+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  10
+[2024-11-10T00:42:43.973+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-25' AS date, '229.7400' AS open, '233.2200' AS high, '229.5700' AS low, '231.4100' AS close, '38802304' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:44.510+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  11
+[2024-11-10T00:42:44.511+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-24' AS date, '229.9800' AS open, '230.8200' AS high, '228.4100' AS low, '230.5700' AS close, '31109503' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:45.014+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  12
+[2024-11-10T00:42:45.014+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-23' AS date, '234.0800' AS open, '235.1440' AS high, '227.7600' AS low, '230.7600' AS close, '52286979' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:45.696+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  13
+[2024-11-10T00:42:45.696+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-22' AS date, '233.8850' AS open, '236.2200' AS high, '232.6000' AS low, '235.8600' AS close, '38846578' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:46.225+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  14
+[2024-11-10T00:42:46.226+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-21' AS date, '234.4500' AS open, '236.8500' AS high, '234.4500' AS low, '236.4800' AS close, '36254470' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:46.737+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  15
+[2024-11-10T00:42:46.738+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-18' AS date, '236.1800' AS open, '236.1800' AS high, '234.0100' AS low, '235.0000' AS close, '46431472' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:47.449+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  16
+[2024-11-10T00:42:47.450+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-17' AS date, '233.4300' AS open, '233.8500' AS high, '230.5200' AS low, '232.1500' AS close, '32993810' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:48.424+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  17
+[2024-11-10T00:42:48.425+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-16' AS date, '231.6000' AS open, '232.1200' AS high, '229.8400' AS low, '231.7800' AS close, '34082240' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:49.007+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  18
+[2024-11-10T00:42:49.008+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-15' AS date, '233.6100' AS open, '237.4900' AS high, '232.3700' AS low, '233.8500' AS close, '64751367' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:49.612+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  19
+[2024-11-10T00:42:49.613+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-14' AS date, '228.7000' AS open, '231.7300' AS high, '228.6000' AS low, '231.3000' AS close, '39882085' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:50.216+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  20
+[2024-11-10T00:42:50.216+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-11' AS date, '229.3000' AS open, '229.4100' AS high, '227.3400' AS low, '227.5500' AS close, '31759188' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:50.773+0000] {logging_mixin.py:188} INFO - Number of Inserts Executed:  21
+[2024-11-10T00:42:50.773+0000] {logging_mixin.py:188} INFO - Executing:  
+            MERGE INTO dev.raw_data.stock_data AS target
+            USING (SELECT '2024-10-10' AS date, '227.7800' AS open, '229.5000' AS high, '227.1700' AS low, '229.0400' AS close, '28183544' AS volume, 'AAPL' AS symbol) AS source
+            ON target.symbol = source.symbol and target.date = source.date
+            WHEN MATCHED THEN
+                UPDATE SET
+                    date = source.date,
+                    open = source.open,
+                    high = source.high,
+                    low = source.low,
+                    close = source.close,
+                    volume = source.volume
+            WHEN NOT MATCHED THEN
+                INSERT (date, open, high, low, close, volume, symbol)
+                VALUES (source.date, source.open, source.high, source.low, source.close, source.volume, source.symbol);
+            
+[2024-11-10T00:42:51.007+0000] {local_task_job_runner.py:310} WARNING - State of this instance has been externally set to up_for_retry. Terminating instance.
+[2024-11-10T00:42:51.010+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
+[2024-11-10T00:42:51.011+0000] {process_utils.py:132} INFO - Sending 15 to group 2837. PIDs of all processes in the group: [2837]
+[2024-11-10T00:42:51.012+0000] {process_utils.py:87} INFO - Sending the signal 15 to group 2837
+[2024-11-10T00:42:51.013+0000] {taskinstance.py:2611} ERROR - Received SIGTERM. Terminating subprocesses.
+[2024-11-10T00:42:51.013+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2024-11-10T00:42:51.026+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/decorators/base.py", line 265, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 122, in load_stock_data
+    cursor.execute(merge_sql)
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 734, in _post_request
+    ret = self.fetch(
+          ^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 843, in fetch
+    ret = self._request_exec_wrapper(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 884, in _request_exec_wrapper
+    return_object = self._request_exec(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 1078, in _request_exec
+    raw_ret = session.request(
+              ^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 715, in urlopen
+    httplib_response = self._make_request(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 467, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 462, in _make_request
+    httplib_response = conn.getresponse()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 1428, in getresponse
+    response.begin()
+  File "/usr/local/lib/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/contrib/pyopenssl.py", line 330, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 145, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 106, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+           ^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 104, in do_poll
+    return poll_obj.poll(t)
+           ^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2613, in signal_handler
+    raise AirflowTaskTerminated("Task received SIGTERM signal")
+airflow.exceptions.AirflowTaskTerminated: Task received SIGTERM signal
+[2024-11-10T00:42:51.034+0000] {taskinstance.py:1206} INFO - Marking task as FAILED. dag_id=Stock_Data_ETL, task_id=load_stock_data, run_id=manual__2024-11-09T22:09:23.592805+00:00, execution_date=20241109T220923, start_date=20241109T231120, end_date=20241110T004251
+[2024-11-10T00:42:51.046+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/utils/email.py:154 RemovedInAirflow3Warning: Fetching SMTP credentials from configuration variables will be deprecated in a future release. Please set credentials using a connection instead.
+[2024-11-10T00:42:51.047+0000] {configuration.py:1050} WARNING - section/key [smtp/smtp_user] not found in config
+[2024-11-10T00:42:51.047+0000] {email.py:271} INFO - Email alerting: attempt 1
+[2024-11-10T00:42:51.051+0000] {configuration.py:1050} WARNING - section/key [smtp/smtp_user] not found in config
+[2024-11-10T00:42:51.052+0000] {email.py:271} INFO - Email alerting: attempt 1
+[2024-11-10T00:42:51.052+0000] {taskinstance.py:879} ERROR - Failed to send email to: ['shatayu.thakur@sjsu.edu', 'pranav.raveendran@sjsu.edu']
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2479, in _run_raw_task
+    self._execute_task_with_callbacks(context, test_mode, session=session)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2676, in _execute_task_with_callbacks
+    result = self._execute_task(context, task_orig)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2701, in _execute_task
+    return _execute_task(self, context, task_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/decorators/base.py", line 265, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/FinanceDataAnalytics_ETL_Pair9.ipynb.py", line 122, in load_stock_data
+    cursor.execute(merge_sql)
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 977, in execute
+    ret = self._execute_helper(query, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/cursor.py", line 694, in _execute_helper
+    ret = self._connection.cmd_query(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/connection.py", line 1309, in cmd_query
+    ret = self.rest.request(
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 493, in request
+    return self._post_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 734, in _post_request
+    ret = self.fetch(
+          ^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 843, in fetch
+    ret = self._request_exec_wrapper(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 884, in _request_exec_wrapper
+    return_object = self._request_exec(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/network.py", line 1078, in _request_exec
+    raw_ret = session.request(
+              ^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/requests/adapters.py", line 486, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 715, in urlopen
+    httplib_response = self._make_request(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 467, in _make_request
+    six.raise_from(e, None)
+  File "<string>", line 3, in raise_from
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/connectionpool.py", line 462, in _make_request
+    httplib_response = conn.getresponse()
+                       ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 1428, in getresponse
+    response.begin()
+  File "/usr/local/lib/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/contrib/pyopenssl.py", line 330, in recv_into
+    if not util.wait_for_read(self.socket, self.socket.gettimeout()):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 145, in wait_for_read
+    return wait_for_socket(sock, read=True, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 106, in poll_wait_for_socket
+    return bool(_retry_on_intr(do_poll, timeout))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 43, in _retry_on_intr
+    return fn(timeout)
+           ^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/snowflake/connector/vendored/urllib3/util/wait.py", line 104, in do_poll
+    return poll_obj.poll(t)
+           ^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 2613, in signal_handler
+    raise AirflowTaskTerminated("Task received SIGTERM signal")
+airflow.exceptions.AirflowTaskTerminated: Task received SIGTERM signal
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 1063, in _email_alert
+    send_email(task.email, subject, html_content)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 80, in send_email
+    return backend(
+           ^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 154, in send_email_smtp
+    send_mime_email(e_from=mail_from, e_to=recipients, mime_msg=msg, conn_id=conn_id, dryrun=dryrun)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 273, in send_mime_email
+    smtp_conn = _get_smtp_connection(smtp_host, smtp_port, smtp_timeout, smtp_ssl)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 317, in _get_smtp_connection
+    return smtplib.SMTP(host=host, port=port, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 255, in __init__
+    (code, msg) = self.connect(host, port)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 341, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 312, in _get_socket
+    return socket.create_connection((host, port), timeout,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 852, in create_connection
+    raise exceptions[0]
+  File "/usr/local/lib/python3.12/socket.py", line 837, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 877, in _handle_failure
+    task_instance.email_alert(error, failure_context["task"])
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 3163, in email_alert
+    _email_alert(task_instance=self, exception=exception, task=task)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 1065, in _email_alert
+    send_email(task.email, subject, html_content_err)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 80, in send_email
+    return backend(
+           ^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 154, in send_email_smtp
+    send_mime_email(e_from=mail_from, e_to=recipients, mime_msg=msg, conn_id=conn_id, dryrun=dryrun)
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 273, in send_mime_email
+    smtp_conn = _get_smtp_connection(smtp_host, smtp_port, smtp_timeout, smtp_ssl)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/utils/email.py", line 317, in _get_smtp_connection
+    return smtplib.SMTP(host=host, port=port, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 255, in __init__
+    (code, msg) = self.connect(host, port)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 341, in connect
+    self.sock = self._get_socket(host, port, self.timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/smtplib.py", line 312, in _get_socket
+    return socket.create_connection((host, port), timeout,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socket.py", line 852, in create_connection
+    raise exceptions[0]
+  File "/usr/local/lib/python3.12/socket.py", line 837, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+[2024-11-10T00:42:51.069+0000] {process_utils.py:80} INFO - Process psutil.Process(pid=2837, status='terminated', exitcode=2, started='23:11:19') (2837) terminated with exit code 2

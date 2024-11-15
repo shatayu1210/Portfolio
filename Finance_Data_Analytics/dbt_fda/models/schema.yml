@@ -1,0 +1,31 @@
+models:  
+ - name: bollinger_stock_summary
+   description: Analytics model for bollinger band data with regards to stock price records
+   columns:
+    - name: date
+      description: Enforce all populated values for date column
+      data_tests:
+       - not_null
+    - name: symbol
+      description:  Enforce all populated values for symbol column
+      data_tests:
+       - not_null
+    - name: close
+      description:  Enforce all populated values for close column
+      data_tests:
+       - not_null
+ - name: obv_stock_summary
+   description: Analytics model for On-Balance Volume (OBV) stock summary data
+   columns:
+    - name: date
+      description: Enforce all populated values for date column
+      data_tests:
+       - not_null
+    - name: symbol
+      description:  Enforce all populated values for symbol column
+      data_tests:
+       - not_null
+    - name: obv
+      description:  Enforce all populated values for obv column
+      data_tests:
+       - not_null
