@@ -1,0 +1,13 @@
+.home_bg {
+    background-image: url('/home_bg2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    min-height: 100vh;
+    height: auto;
+}
+
+.custom-shadow {
+    text-shadow: 0px 0px 20px rgba(0, 0, 0, 1);
+}

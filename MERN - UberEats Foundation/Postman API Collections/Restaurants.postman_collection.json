@@ -1,0 +1,150 @@
+{
+	"info": {
+		"_postman_id": "a5d9d48d-3cf6-47cb-a0ee-4c7542adad1c",
+		"name": "Restaurants",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41745793"
+	},
+	"item": [
+		{
+			"name": "View All",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/restaurants",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View Single",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/restaurants/4",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Subway\",\n    \"description\": \"Variety of Sandwiches.\",\n    \"email\": \"subway@gmail.com\",\n    \"phone\": 2108126352,\n    \"address\": \"Pacific Portal 24\",\n    \"offers_pickup\": true,\n    \"offers_delivery\": false,\n    \"ratings\": 3.5,\n    \"owner_id\": 5,\n    \"image_url\": \"/uploads/24991299.png\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/api/restaurants",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Subway\",\n    \"description\": \"Variety of Sandwiches.\",\n    \"email\": \"subway@gmail.com\",\n    \"phone\": 2108126352,\n    \"address\": \"Pacific Portal 24\",\n    \"offers_pickup\": true,\n    \"offers_delivery\": false,\n    \"ratings\": 3.5,\n    \"owner_id\": 5,\n    \"image_url\": \"/uploads/124323.png\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/api/restaurants/12",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/restaurants/7",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View Owner's",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/api/restaurants/owner/4",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"restaurants",
+						"owner",
+						"4"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
