@@ -1,0 +1,29 @@
+html, body, #root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Disable all card animations and transitions globally */
+.card {
+  transform: none !important;
+  transition: none !important;
+}
+
+.card:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Additional override for any card that might be using transform with a different class name */
+[class*="card"] {
+  transform: none !important;
+  transition: none !important;
+}
+
+[class*="card"]:hover {
+  transform: none !important;
+  transition: none !important;
+}

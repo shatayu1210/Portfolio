@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: backend
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml
+        kompose.version: 1.35.0 (HEAD)
+      labels:
+        io.kompose.service: backend
+    spec:
+      containers:
+        - env:
+            - name: CLOUDINARY_API_KEY
+              value: "[REMOVED]"
+            - name: CLOUDINARY_API_SECRET
+              value: [REMOVED]
+            - name: CLOUDINARY_CLOUD_NAME
+              value: [REMOVED]
+            - name: JWT_SECRET
+              value: [REMOVED]
+            - name: KAFKA_BROKER
+              value: kafka:9092
+            - name: MONGODB_URI
+              value: [REMOVED]
+            - name: PORT
+              value: "3000"
+          image: lab2-backend:latest
+          name: backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      restartPolicy: Always

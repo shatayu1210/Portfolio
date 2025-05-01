@@ -1,0 +1,163 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* Globally disable all card hover animations */
+.card,
+.card-*,
+[class*='card'] {
+  transform: none !important;
+  transition: none !important;
+}
+
+.card:hover,
+.card-*:hover,
+[class*='card']:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Also disable any hover scale animations */
+.hover-scale, 
+.hover-scale:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Prevent modal from shrinking too much on smaller screens */
+@media (max-width: 991px) {
+  .custom-modal-width {
+    width: 90vw !important;
+    max-width: 650px !important;
+  }
+}
+
+/* Prevent modal from shrinking too much on smaller screens */
+@media (max-width: 576px) {
+  .custom-modal-width .d-flex.flex-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Animation for dropdown inner content */
+.dropdown-animate {
+  animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Order card hover animation */
+.order-hover {
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.order-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Rotate icon when active */
+.icon-rotatable {
+  transform: rotate(0deg);
+  transition: transform 0.4s ease;
+}
+.icon-rotate {
+  transform: rotate(30deg);
+}
+
+@media (max-width: 1200px) {
+  .metric-card {
+    width: 75%;
+    margin: 0 auto;
+  }
+  /* reduce title and text size on smaller screens */
+  .metric-card .card-title {
+    font-size: clamp(0.75rem, 2vw, 1rem) !important;
+  }
+  .metric-card .card-text {
+    font-size: clamp(1.25rem, 3vw, 2rem) !important;
+  }
+}
+
+/* Custom Toastify */
+/* Toast body customization */
+.custom-toast-light {
+  background-color: white !important;
+  color: black !important;
+  font-weight: 500;
+}
+
+/* Progress bar (timer) color */
+.custom-progress-dark {
+  background: black !important;
+}
