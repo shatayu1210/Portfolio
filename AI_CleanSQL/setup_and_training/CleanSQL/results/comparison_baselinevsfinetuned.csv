@@ -1,0 +1,3 @@
+Configuration,dq_robust_1pct,dq_robust_5pct,MAPE,MAE,Literal Acc,Note Coverage
+Baseline (Base Model),78.1%,79.7%,10.22,134.38,37.1%,100.0%
+Fine-Tuned (CleanSQL),58.3%,58.6%,0.50,257.90,35.9%,100.0%

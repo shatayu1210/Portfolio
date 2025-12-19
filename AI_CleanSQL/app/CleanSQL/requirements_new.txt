@@ -1,0 +1,23 @@
+# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+
+# LLM and inference
+requests>=2.31.0
+
+# RAG and embeddings
+qdrant-client>=1.8.0,<1.15.0
+FlagEmbedding>=1.2.10
+
+# SQL parsing
+sqlglot>=23.0.0
+
+# Configuration
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+
+# Utilities
+tqdm>=4.66.0

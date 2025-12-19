@@ -1,0 +1,1740 @@
+{
+  "db_id": "student_transcripts_tracking",
+  "tables": [
+    {
+      "name": "Addresses",
+      "ddl": "CREATE TABLE `Addresses` (\n`address_id` INTEGER PRIMARY KEY,\n`line_1` VARCHAR(255),\n`line_2` VARCHAR(255),\n`line_3` VARCHAR(255),\n`city` VARCHAR(255),\n`zip_postcode` VARCHAR(20),\n`state_province_county` VARCHAR(255),\n`country` VARCHAR(255),\n`other_address_details` VARCHAR(255)\n)",
+      "columns": [
+        {
+          "name": "address_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "line_1",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "line_2",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "line_3",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "city",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "zip_postcode",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "state_province_county",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "country",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_address_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Courses",
+      "ddl": "CREATE TABLE `Courses` (\n`course_id` INTEGER PRIMARY KEY,\n`course_name` VARCHAR(255),\n`course_description` VARCHAR(255),\n`other_details` VARCHAR(255)\n)",
+      "columns": [
+        {
+          "name": "course_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "course_name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "course_description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Departments",
+      "ddl": "CREATE TABLE `Departments` (\n`department_id` INTEGER PRIMARY KEY,\n`department_name` VARCHAR(255),\n`department_description` VARCHAR(255),\n`other_details` VARCHAR(255)\n)",
+      "columns": [
+        {
+          "name": "department_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "department_name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "department_description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Degree_Programs",
+      "ddl": "CREATE TABLE `Degree_Programs` (\n`degree_program_id` INTEGER PRIMARY KEY,\n`department_id` INTEGER NOT NULL,\n`degree_summary_name` VARCHAR(255),\n`degree_summary_description` VARCHAR(255),\n`other_details` VARCHAR(255),\nFOREIGN KEY (`department_id` ) REFERENCES `Departments`(`department_id` )\n)",
+      "columns": [
+        {
+          "name": "degree_program_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "department_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "degree_summary_name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "degree_summary_description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Degree_Programs.department_id",
+          "to": "Departments.department_id"
+        }
+      ]
+    },
+    {
+      "name": "Sections",
+      "ddl": "CREATE TABLE `Sections` (\n`section_id` INTEGER PRIMARY KEY,\n`course_id` INTEGER NOT NULL,\n`section_name` VARCHAR(255),\n`section_description` VARCHAR(255),\n`other_details` VARCHAR(255),\nFOREIGN KEY (`course_id` ) REFERENCES `Courses`(`course_id` )\n)",
+      "columns": [
+        {
+          "name": "section_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "course_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "section_name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "section_description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Sections.course_id",
+          "to": "Courses.course_id"
+        }
+      ]
+    },
+    {
+      "name": "Semesters",
+      "ddl": "CREATE TABLE `Semesters` (\n`semester_id` INTEGER PRIMARY KEY,\n`semester_name` VARCHAR(255),\n`semester_description` VARCHAR(255),\n`other_details` VARCHAR(255)\n)",
+      "columns": [
+        {
+          "name": "semester_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "semester_name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "semester_description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Students",
+      "ddl": "CREATE TABLE `Students` (\n`student_id` INTEGER PRIMARY KEY,\n`current_address_id` INTEGER NOT NULL,\n`permanent_address_id` INTEGER NOT NULL,\n`first_name` VARCHAR(80),\n`middle_name` VARCHAR(40),\n`last_name` VARCHAR(40),\n`cell_mobile_number` VARCHAR(40),\n`email_address` VARCHAR(40),\n`ssn` VARCHAR(40),\n`date_first_registered` DATETIME,\n`date_left` DATETIME,\n`other_student_details` VARCHAR(255),\nFOREIGN KEY (`current_address_id` ) REFERENCES `Addresses`(`address_id` ),\nFOREIGN KEY (`permanent_address_id` ) REFERENCES `Addresses`(`address_id` )\n)",
+      "columns": [
+        {
+          "name": "student_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "current_address_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "permanent_address_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "first_name",
+          "type": "VARCHAR(80)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "middle_name",
+          "type": "VARCHAR(40)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "last_name",
+          "type": "VARCHAR(40)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "cell_mobile_number",
+          "type": "VARCHAR(40)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "email_address",
+          "type": "VARCHAR(40)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "ssn",
+          "type": "VARCHAR(40)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_first_registered",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_left",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_student_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Students.permanent_address_id",
+          "to": "Addresses.address_id"
+        },
+        {
+          "from": "Students.current_address_id",
+          "to": "Addresses.address_id"
+        }
+      ]
+    },
+    {
+      "name": "Student_Enrolment",
+      "ddl": "CREATE TABLE `Student_Enrolment` (\n`student_enrolment_id` INTEGER PRIMARY KEY,\n`degree_program_id` INTEGER NOT NULL,\n`semester_id` INTEGER NOT NULL,\n`student_id` INTEGER NOT NULL,\n`other_details` VARCHAR(255),\nFOREIGN KEY (`degree_program_id` ) REFERENCES `Degree_Programs`(`degree_program_id` ),\nFOREIGN KEY (`semester_id` ) REFERENCES `Semesters`(`semester_id` ),\nFOREIGN KEY (`student_id` ) REFERENCES `Students`(`student_id` )\n)",
+      "columns": [
+        {
+          "name": "student_enrolment_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "degree_program_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "semester_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "student_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Student_Enrolment.student_id",
+          "to": "Students.student_id"
+        },
+        {
+          "from": "Student_Enrolment.semester_id",
+          "to": "Semesters.semester_id"
+        },
+        {
+          "from": "Student_Enrolment.degree_program_id",
+          "to": "Degree_Programs.degree_program_id"
+        }
+      ]
+    },
+    {
+      "name": "Student_Enrolment_Courses",
+      "ddl": "CREATE TABLE `Student_Enrolment_Courses` (\n`student_course_id` INTEGER PRIMARY KEY,\n`course_id` INTEGER NOT NULL,\n`student_enrolment_id` INTEGER NOT NULL,\nFOREIGN KEY (`course_id` ) REFERENCES `Courses`(`course_id` ),\nFOREIGN KEY (`student_enrolment_id` ) REFERENCES `Student_Enrolment`(`student_enrolment_id` )\n)",
+      "columns": [
+        {
+          "name": "student_course_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "course_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "student_enrolment_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Student_Enrolment_Courses.student_enrolment_id",
+          "to": "Student_Enrolment.student_enrolment_id"
+        },
+        {
+          "from": "Student_Enrolment_Courses.course_id",
+          "to": "Courses.course_id"
+        }
+      ]
+    },
+    {
+      "name": "Transcripts",
+      "ddl": "CREATE TABLE `Transcripts` (\n`transcript_id` INTEGER PRIMARY KEY,\n`transcript_date` DATETIME,\n`other_details` VARCHAR(255)\n)",
+      "columns": [
+        {
+          "name": "transcript_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "transcript_date",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "other_details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Transcript_Contents",
+      "ddl": "CREATE TABLE `Transcript_Contents` (\n`student_course_id` INTEGER NOT NULL,\n`transcript_id` INTEGER NOT NULL,\nFOREIGN KEY (`student_course_id` ) REFERENCES `Student_Enrolment_Courses`(`student_course_id` ),\nFOREIGN KEY (`transcript_id` ) REFERENCES `Transcripts`(`transcript_id` )\n)",
+      "columns": [
+        {
+          "name": "student_course_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "transcript_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Transcript_Contents.transcript_id",
+          "to": "Transcripts.transcript_id"
+        },
+        {
+          "from": "Transcript_Contents.student_course_id",
+          "to": "Student_Enrolment_Courses.student_course_id"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "Addresses",
+      "column": "address_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY address_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(address_id, 14.0) AS address_id_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "line_1",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY line_1 ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(line_1, 0) AS line_1_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "line_2",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY line_2 ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(line_2, 0) AS line_2_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "line_3",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY line_3 ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(line_3, 0) AS line_3_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "city",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY city ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(city, 0) AS city_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "zip_postcode",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 68.0,
+        "max": 943.0,
+        "median": 638.0,
+        "p95": 902.0,
+        "mean": 605.9333333333333,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY zip_postcode ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(zip_postcode, 902.0) AS zip_postcode_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "state_province_county",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 13.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY state_province_county ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(state_province_county, 0) AS state_province_county_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "country",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY country ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(country, 0) AS country_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Addresses",
+      "column": "other_address_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Addresses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_address_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_address_details, 0) AS other_address_details_capped FROM Addresses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Courses",
+      "column": "course_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY course_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(course_id, 14.0) AS course_id_capped FROM Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Courses",
+      "column": "course_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY course_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(course_name, 0) AS course_name_capped FROM Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Courses",
+      "column": "course_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY course_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(course_description, 0) AS course_description_capped FROM Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Courses",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Departments",
+      "column": "department_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Departments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(department_id, 14.0) AS department_id_capped FROM Departments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Departments",
+      "column": "department_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Departments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(department_name, 0) AS department_name_capped FROM Departments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Departments",
+      "column": "department_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 13.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Departments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(department_description, 0) AS department_description_capped FROM Departments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Departments",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Departments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Departments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Degree_Programs",
+      "column": "degree_program_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Degree_Programs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY degree_program_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(degree_program_id, 14.0) AS degree_program_id_capped FROM Degree_Programs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Degree_Programs",
+      "column": "department_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.933333333333334,
+        "duplicate_count": 5,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Degree_Programs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(department_id, 14.0) AS department_id_capped FROM Degree_Programs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Degree_Programs",
+      "column": "degree_summary_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 80.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 12,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Degree_Programs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY degree_summary_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(degree_summary_name, 0) AS degree_summary_name_capped FROM Degree_Programs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Degree_Programs",
+      "column": "degree_summary_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 6.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Degree_Programs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY degree_summary_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(degree_summary_description, 0) AS degree_summary_description_capped FROM Degree_Programs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Degree_Programs",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Degree_Programs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Degree_Programs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sections",
+      "column": "section_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sections), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY section_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(section_id, 14.0) AS section_id_capped FROM Sections) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sections",
+      "column": "course_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 26.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 14.0,
+        "median": 7.0,
+        "p95": 14.0,
+        "mean": 7.066666666666666,
+        "duplicate_count": 4,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sections), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY course_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(course_id, 14.0) AS course_id_capped FROM Sections) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sections",
+      "column": "section_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sections), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY section_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(section_name, 0) AS section_name_capped FROM Sections) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sections",
+      "column": "section_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 13.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sections), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY section_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(section_description, 0) AS section_description_capped FROM Sections) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sections",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sections), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Sections) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Semesters",
+      "column": "semester_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Semesters), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY semester_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(semester_id, 14.0) AS semester_id_capped FROM Semesters) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Semesters",
+      "column": "semester_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 6.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Semesters), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY semester_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(semester_name, 0) AS semester_name_capped FROM Semesters) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Semesters",
+      "column": "semester_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 26.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 4,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Semesters), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY semester_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(semester_description, 0) AS semester_description_capped FROM Semesters) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Semesters",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Semesters), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Semesters) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "student_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_id, 14.0) AS student_id_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "current_address_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 9.0,
+        "p95": 15.0,
+        "mean": 9.133333333333333,
+        "duplicate_count": 6,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY current_address_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(current_address_id, 15.0) AS current_address_id_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "permanent_address_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 46.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 3.0,
+        "max": 15.0,
+        "median": 9.0,
+        "p95": 15.0,
+        "mean": 8.4,
+        "duplicate_count": 7,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY permanent_address_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(permanent_address_id, 15.0) AS permanent_address_id_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "first_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY first_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(first_name, 0) AS first_name_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "middle_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY middle_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(middle_name, 0) AS middle_name_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "last_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY last_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(last_name, 0) AS last_name_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "cell_mobile_number",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 3174364122.0,
+        "max": 9700166582.0,
+        "median": 7661787471.0,
+        "p95": 9700166582.0,
+        "mean": 6845439391.666667,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY cell_mobile_number ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(cell_mobile_number, 9700166582.0) AS cell_mobile_number_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "email_address",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY email_address ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(email_address, 0) AS email_address_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "ssn",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 3.0,
+        "max": 141072406.0,
+        "median": 581.0,
+        "p95": 34458427.0,
+        "mean": 13012890.42857143,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY ssn ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(ssn, 34458427.0) AS ssn_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "date_first_registered",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_first_registered ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_first_registered, 0) AS date_first_registered_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "date_left",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_left ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_left, 0) AS date_left_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Students",
+      "column": "other_student_details",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 6.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Students), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_student_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_student_details, 0) AS other_student_details_capped FROM Students) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment",
+      "column": "student_enrolment_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_enrolment_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_enrolment_id, 14.0) AS student_enrolment_id_capped FROM Student_Enrolment) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment",
+      "column": "degree_program_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 12.0,
+        "median": 9.0,
+        "p95": 12.0,
+        "mean": 7.333333333333333,
+        "duplicate_count": 6,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY degree_program_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(degree_program_id, 12.0) AS degree_program_id_capped FROM Student_Enrolment) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment",
+      "column": "semester_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 6.0,
+        "p95": 15.0,
+        "mean": 7.6,
+        "duplicate_count": 6,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY semester_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(semester_id, 15.0) AS semester_id_capped FROM Student_Enrolment) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment",
+      "column": "student_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 46.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 14.0,
+        "median": 7.0,
+        "p95": 14.0,
+        "mean": 7.4,
+        "duplicate_count": 7,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_id, 14.0) AS student_id_capped FROM Student_Enrolment) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Student_Enrolment) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment_Courses",
+      "column": "student_course_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 83814225.0,
+        "median": 9860.0,
+        "p95": 70882679.0,
+        "mean": 15368041.466666667,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment_Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_course_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_course_id, 70882679.0) AS student_course_id_capped FROM Student_Enrolment_Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment_Courses",
+      "column": "course_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 14.0,
+        "median": 10.0,
+        "p95": 14.0,
+        "mean": 8.533333333333333,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment_Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY course_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(course_id, 14.0) AS course_id_capped FROM Student_Enrolment_Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Student_Enrolment_Courses",
+      "column": "student_enrolment_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 14.0,
+        "median": 6.0,
+        "p95": 14.0,
+        "mean": 7.466666666666667,
+        "duplicate_count": 6,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Student_Enrolment_Courses), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_enrolment_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_enrolment_id, 14.0) AS student_enrolment_id_capped FROM Student_Enrolment_Courses) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Transcripts",
+      "column": "transcript_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Transcripts), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY transcript_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(transcript_id, 14.0) AS transcript_id_capped FROM Transcripts) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Transcripts",
+      "column": "transcript_date",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Transcripts), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY transcript_date ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(transcript_date, 0) AS transcript_date_capped FROM Transcripts) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Transcripts",
+      "column": "other_details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Transcripts), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY other_details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(other_details, 0) AS other_details_capped FROM Transcripts) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Transcript_Contents",
+      "column": "student_course_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 70882679.0,
+        "median": 76.0,
+        "p95": 45105806.0,
+        "mean": 9664788.666666666,
+        "duplicate_count": 6,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Transcript_Contents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY student_course_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(student_course_id, 45105806.0) AS student_course_id_capped FROM Transcript_Contents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Transcript_Contents",
+      "column": "transcript_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 15.0,
+        "mean": 8.466666666666667,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Transcript_Contents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY transcript_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(transcript_id, 15.0) AS transcript_id_capped FROM Transcript_Contents) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

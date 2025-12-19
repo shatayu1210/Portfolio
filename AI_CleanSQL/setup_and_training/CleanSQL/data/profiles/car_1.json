@@ -1,0 +1,756 @@
+{
+  "db_id": "car_1",
+  "tables": [
+    {
+      "name": "continents",
+      "ddl": "CREATE TABLE \"continents\" ( \n\t\"ContId\" INTEGER PRIMARY KEY, \n\t\"Continent\" TEXT \n)",
+      "columns": [
+        {
+          "name": "ContId",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Continent",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "countries",
+      "ddl": "CREATE TABLE \"countries\" (\n\t\"CountryId\" INTEGER PRIMARY KEY, \n\t\"CountryName\" TEXT, \n\t\"Continent\" INTEGER,\n\tFOREIGN KEY (Continent) REFERENCES continents(ContId)\n)",
+      "columns": [
+        {
+          "name": "CountryId",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "CountryName",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Continent",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "countries.Continent",
+          "to": "continents.ContId"
+        }
+      ]
+    },
+    {
+      "name": "car_makers",
+      "ddl": "CREATE TABLE \"car_makers\" ( \n\t\"Id\" INTEGER PRIMARY KEY, \n\t\"Maker\" TEXT, \n\t\"FullName\" TEXT, \n\t\"Country\" TEXT,\n\tFOREIGN KEY (Country) REFERENCES countries(CountryId)\n)",
+      "columns": [
+        {
+          "name": "Id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Maker",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "FullName",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Country",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "car_makers.Country",
+          "to": "countries.CountryId"
+        }
+      ]
+    },
+    {
+      "name": "model_list",
+      "ddl": "CREATE TABLE \"model_list\" ( \n\t\"ModelId\" INTEGER PRIMARY KEY, \n\t\"Maker\" INTEGER, \n\t\"Model\" TEXT UNIQUE,\n\tFOREIGN KEY (Maker) REFERENCES car_makers (Id)\n\n)",
+      "columns": [
+        {
+          "name": "ModelId",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Maker",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Model",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "model_list.Maker",
+          "to": "car_makers.Id"
+        }
+      ]
+    },
+    {
+      "name": "car_names",
+      "ddl": "CREATE TABLE \"car_names\" ( \n\t\"MakeId\" INTEGER PRIMARY KEY, \n\t\"Model\" TEXT, \n\t\"Make\" TEXT,\n\tFOREIGN KEY (Model) REFERENCES model_list (Model)\n)",
+      "columns": [
+        {
+          "name": "MakeId",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Model",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Make",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "car_names.Model",
+          "to": "model_list.Model"
+        }
+      ]
+    },
+    {
+      "name": "cars_data",
+      "ddl": "CREATE TABLE \"cars_data\" (\n\t\"Id\" INTEGER PRIMARY KEY, \n\t\"MPG\" TEXT, \n\t\"Cylinders\" INTEGER, \n\t\"Edispl\" REAL, \n\t\"Horsepower\" TEXT, \n\t\"Weight\" INTEGER, \n\t\"Accelerate\" REAL, \n\t\"Year\" INTEGER,\n\tFOREIGN KEY (Id) REFERENCES car_names (MakeId)\n)",
+      "columns": [
+        {
+          "name": "Id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "MPG",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Cylinders",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Edispl",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Horsepower",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Weight",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Accelerate",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Year",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "cars_data.Id",
+          "to": "car_names.MakeId"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "continents",
+      "column": "ContId",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 5.0,
+        "median": 3.0,
+        "p95": 5.0,
+        "mean": 3.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM continents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY ContId ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(ContId, 5.0) AS ContId_capped FROM continents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "continents",
+      "column": "Continent",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM continents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Continent ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Continent, 0) AS Continent_capped FROM continents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "countries",
+      "column": "CountryId",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM countries), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY CountryId ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(CountryId, 14.0) AS CountryId_capped FROM countries) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "countries",
+      "column": "CountryName",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM countries), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY CountryName ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(CountryName, 0) AS CountryName_capped FROM countries) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "countries",
+      "column": "Continent",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 66.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 5.0,
+        "median": 2.0,
+        "p95": 5.0,
+        "mean": 2.6,
+        "duplicate_count": 10,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM countries), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Continent ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Continent, 5.0) AS Continent_capped FROM countries) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_makers",
+      "column": "Id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 22,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 23.0,
+        "median": 12.5,
+        "p95": 22.0,
+        "mean": 12.090909090909092,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_makers), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Id, 22.0) AS Id_capped FROM car_makers) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_makers",
+      "column": "Maker",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 22,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_makers), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Maker ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Maker, 0) AS Maker_capped FROM car_makers) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_makers",
+      "column": "FullName",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 22,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_makers), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY FullName ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(FullName, 0) AS FullName_capped FROM car_makers) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_makers",
+      "column": "Country",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 63.636,
+        "total_rows": 22,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 8.0,
+        "median": 3.5,
+        "p95": 8.0,
+        "mean": 3.6818181818181817,
+        "duplicate_count": 14,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_makers), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Country ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Country, 8.0) AS Country_capped FROM car_makers) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "model_list",
+      "column": "ModelId",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 36,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 36.0,
+        "median": 18.5,
+        "p95": 34.0,
+        "mean": 18.5,
+        "duplicate_count": 0,
+        "outlier_count": 2
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM model_list), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY ModelId ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(ModelId, 34.0) AS ModelId_capped FROM model_list) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "model_list",
+      "column": "Maker",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 36.111,
+        "total_rows": 36,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 23.0,
+        "median": 8.0,
+        "p95": 21.0,
+        "mean": 10.055555555555555,
+        "duplicate_count": 13,
+        "outlier_count": 2
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM model_list), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Maker ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Maker, 21.0) AS Maker_capped FROM model_list) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "model_list",
+      "column": "Model",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 36,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM model_list), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Model ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Model, 0) AS Model_capped FROM model_list) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_names",
+      "column": "MakeId",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 406.0,
+        "median": 203.5,
+        "p95": 386.0,
+        "mean": 203.5,
+        "duplicate_count": 0,
+        "outlier_count": 20
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_names), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY MakeId ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(MakeId, 386.0) AS MakeId_capped FROM car_names) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_names",
+      "column": "Model",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 91.872,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 373,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_names), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Model ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Model, 0) AS Model_capped FROM car_names) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "car_names",
+      "column": "Make",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 23.645,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 96,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM car_names), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Make ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Make, 0) AS Make_capped FROM car_names) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 406.0,
+        "median": 203.5,
+        "p95": 386.0,
+        "mean": 203.5,
+        "duplicate_count": 0,
+        "outlier_count": 20
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Id, 386.0) AS Id_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "MPG",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 67.98,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 9.0,
+        "max": 46.6,
+        "median": 23.0,
+        "p95": 37.0,
+        "mean": 23.514572864321607,
+        "duplicate_count": 276,
+        "outlier_count": 20
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY MPG ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(MPG, 37.0) AS MPG_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Cylinders",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 98.768,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 3.0,
+        "max": 8.0,
+        "median": 4.0,
+        "p95": 8.0,
+        "mean": 5.475369458128079,
+        "duplicate_count": 401,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Cylinders ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Cylinders, 8.0) AS Cylinders_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Edispl",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 79.557,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 68.0,
+        "max": 455.0,
+        "median": 151.0,
+        "p95": 400.0,
+        "mean": 194.7795566502463,
+        "duplicate_count": 323,
+        "outlier_count": 9
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Edispl ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Edispl, 400.0) AS Edispl_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Horsepower",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 76.847,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 46.0,
+        "max": 230.0,
+        "median": 95.0,
+        "p95": 180.0,
+        "mean": 105.0825,
+        "duplicate_count": 312,
+        "outlier_count": 17
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Horsepower ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Horsepower, 180.0) AS Horsepower_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Weight",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 12.315,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 1613.0,
+        "max": 5140.0,
+        "median": 2822.5,
+        "p95": 4464.0,
+        "mean": 2979.4137931034484,
+        "duplicate_count": 50,
+        "outlier_count": 19
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Weight ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Weight, 4464.0) AS Weight_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Accelerate",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 76.355,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 8.0,
+        "max": 24.8,
+        "median": 15.5,
+        "p95": 20.4,
+        "mean": 15.519704433497537,
+        "duplicate_count": 310,
+        "outlier_count": 20
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Accelerate ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Accelerate, 20.4) AS Accelerate_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "cars_data",
+      "column": "Year",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 96.798,
+        "total_rows": 406,
+        "missing_count": 0,
+        "min": 1970.0,
+        "max": 1982.0,
+        "median": 1976.0,
+        "p95": 1982.0,
+        "mean": 1975.92118226601,
+        "duplicate_count": 393,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM cars_data), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Year, 1982.0) AS Year_capped FROM cars_data) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

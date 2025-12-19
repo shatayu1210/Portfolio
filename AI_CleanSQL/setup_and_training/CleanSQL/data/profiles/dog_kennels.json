@@ -1,0 +1,1503 @@
+{
+  "db_id": "dog_kennels",
+  "tables": [
+    {
+      "name": "Breeds",
+      "ddl": "CREATE TABLE `Breeds` (\n`breed_code` VARCHAR(10) PRIMARY KEY ,\n`breed_name` VARCHAR(80)\n)",
+      "columns": [
+        {
+          "name": "breed_code",
+          "type": "VARCHAR(10)",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "breed_name",
+          "type": "VARCHAR(80)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Charges",
+      "ddl": "CREATE TABLE `Charges` (\n`charge_id` INTEGER PRIMARY KEY ,\n`charge_type` VARCHAR(10),\n`charge_amount` DECIMAL(19,4)\n)",
+      "columns": [
+        {
+          "name": "charge_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "charge_type",
+          "type": "VARCHAR(10)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "charge_amount",
+          "type": "DECIMAL(19,4)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Sizes",
+      "ddl": "CREATE TABLE `Sizes` (\n`size_code` VARCHAR(10) PRIMARY KEY ,\n`size_description` VARCHAR(80)\n)",
+      "columns": [
+        {
+          "name": "size_code",
+          "type": "VARCHAR(10)",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "size_description",
+          "type": "VARCHAR(80)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Treatment_Types",
+      "ddl": "CREATE TABLE `Treatment_Types` (\n`treatment_type_code` VARCHAR(10) PRIMARY KEY ,\n`treatment_type_description` VARCHAR(80)\n)",
+      "columns": [
+        {
+          "name": "treatment_type_code",
+          "type": "VARCHAR(10)",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "treatment_type_description",
+          "type": "VARCHAR(80)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Owners",
+      "ddl": "CREATE TABLE `Owners` (\n`owner_id` INTEGER PRIMARY KEY ,\n`first_name` VARCHAR(50),\n`last_name` VARCHAR(50),\n`street` VARCHAR(50),\n`city` VARCHAR(50),\n`state` VARCHAR(20),\n`zip_code` VARCHAR(20),\n`email_address` VARCHAR(50),\n`home_phone` VARCHAR(20),\n`cell_number` VARCHAR(20)\n)",
+      "columns": [
+        {
+          "name": "owner_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "first_name",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "last_name",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "street",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "city",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "state",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "zip_code",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "email_address",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "home_phone",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "cell_number",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Dogs",
+      "ddl": "CREATE TABLE `Dogs` (\n`dog_id` INTEGER PRIMARY KEY ,\n`owner_id` INTEGER NOT NULL,\n`abandoned_yn` VARCHAR(1),\n`breed_code` VARCHAR(10) NOT NULL,\n`size_code` VARCHAR(10) NOT NULL,\n`name` VARCHAR(50),\n`age` VARCHAR(20),\n`date_of_birth` DATETIME,\n`gender` VARCHAR(1),\n`weight` VARCHAR(20),\n`date_arrived` DATETIME,\n`date_adopted` DATETIME,\n`date_departed` DATETIME,\nFOREIGN KEY (`breed_code` ) REFERENCES `Breeds`(`breed_code` ),\nFOREIGN KEY (`size_code` ) REFERENCES `Sizes`(`size_code` ),\nFOREIGN KEY (`owner_id` ) REFERENCES `Owners`(`owner_id` ),\nFOREIGN KEY (`owner_id` ) REFERENCES `Owners`(`owner_id` )\n)",
+      "columns": [
+        {
+          "name": "dog_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "owner_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "abandoned_yn",
+          "type": "VARCHAR(1)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "breed_code",
+          "type": "VARCHAR(10)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "size_code",
+          "type": "VARCHAR(10)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "age",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_of_birth",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "gender",
+          "type": "VARCHAR(1)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "weight",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_arrived",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_adopted",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_departed",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Dogs.owner_id",
+          "to": "Owners.owner_id"
+        },
+        {
+          "from": "Dogs.owner_id",
+          "to": "Owners.owner_id"
+        },
+        {
+          "from": "Dogs.size_code",
+          "to": "Sizes.size_code"
+        },
+        {
+          "from": "Dogs.breed_code",
+          "to": "Breeds.breed_code"
+        }
+      ]
+    },
+    {
+      "name": "Professionals",
+      "ddl": "CREATE TABLE `Professionals` (\n`professional_id` INTEGER PRIMARY KEY ,\n`role_code` VARCHAR(10) NOT NULL,\n`first_name` VARCHAR(50),\n`street` VARCHAR(50),\n`city` VARCHAR(50),\n`state` VARCHAR(20),\n`zip_code` VARCHAR(20),\n`last_name` VARCHAR(50),\n`email_address` VARCHAR(50),\n`home_phone` VARCHAR(20),\n`cell_number` VARCHAR(20)\n)",
+      "columns": [
+        {
+          "name": "professional_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "role_code",
+          "type": "VARCHAR(10)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "first_name",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "street",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "city",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "state",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "zip_code",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "last_name",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "email_address",
+          "type": "VARCHAR(50)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "home_phone",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "cell_number",
+          "type": "VARCHAR(20)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Treatments",
+      "ddl": "CREATE TABLE `Treatments` (\n`treatment_id` INTEGER PRIMARY KEY ,\n`dog_id` INTEGER NOT NULL,\n`professional_id` INTEGER NOT NULL,\n`treatment_type_code` VARCHAR(10) NOT NULL,\n`date_of_treatment` DATETIME,\n`cost_of_treatment` DECIMAL(19,4),\nFOREIGN KEY (`treatment_type_code` ) REFERENCES `Treatment_Types`(`treatment_type_code` ),\nFOREIGN KEY (`professional_id` ) REFERENCES `Professionals`(`professional_id` ),\nFOREIGN KEY (`dog_id` ) REFERENCES `Dogs`(`dog_id` )\n)",
+      "columns": [
+        {
+          "name": "treatment_id",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "dog_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "professional_id",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "treatment_type_code",
+          "type": "VARCHAR(10)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "date_of_treatment",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "cost_of_treatment",
+          "type": "DECIMAL(19,4)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Treatments.dog_id",
+          "to": "Dogs.dog_id"
+        },
+        {
+          "from": "Treatments.professional_id",
+          "to": "Professionals.professional_id"
+        },
+        {
+          "from": "Treatments.treatment_type_code",
+          "to": "Treatment_Types.treatment_type_code"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "Breeds",
+      "column": "breed_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Breeds), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY breed_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(breed_code, 0) AS breed_code_capped FROM Breeds) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Breeds",
+      "column": "breed_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Breeds), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY breed_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(breed_name, 0) AS breed_name_capped FROM Breeds) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Charges",
+      "column": "charge_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 3.0,
+        "median": 2.0,
+        "p95": 3.0,
+        "mean": 2.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Charges), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY charge_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(charge_id, 3.0) AS charge_id_capped FROM Charges) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Charges",
+      "column": "charge_type",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Charges), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY charge_type ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(charge_type, 0) AS charge_type_capped FROM Charges) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Charges",
+      "column": "charge_amount",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": 98.0,
+        "max": 640.0,
+        "median": 322.0,
+        "p95": 640.0,
+        "mean": 353.3333333333333,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Charges), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY charge_amount ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(charge_amount, 640.0) AS charge_amount_capped FROM Charges) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sizes",
+      "column": "size_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sizes), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY size_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(size_code, 0) AS size_code_capped FROM Sizes) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Sizes",
+      "column": "size_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Sizes), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY size_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(size_description, 0) AS size_description_capped FROM Sizes) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatment_Types",
+      "column": "treatment_type_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatment_Types), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY treatment_type_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(treatment_type_code, 0) AS treatment_type_code_capped FROM Treatment_Types) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatment_Types",
+      "column": "treatment_type_description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 3,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatment_Types), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY treatment_type_description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(treatment_type_description, 0) AS treatment_type_description_capped FROM Treatment_Types) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "owner_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY owner_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(owner_id, 14.0) AS owner_id_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "first_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY first_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(first_name, 0) AS first_name_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "last_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY last_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(last_name, 0) AS last_name_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "street",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY street ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(street, 0) AS street_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "city",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY city ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(city, 0) AS city_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "state",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 6.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY state ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(state, 0) AS state_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "zip_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 589.0,
+        "max": 93165.0,
+        "median": 36871.0,
+        "p95": 92406.0,
+        "mean": 46821.46666666667,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY zip_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(zip_code, 92406.0) AS zip_code_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "email_address",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY email_address ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(email_address, 0) AS email_address_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "home_phone",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1802479758.0,
+        "max": 1802479758.0,
+        "median": 1802479758.0,
+        "p95": 1802479758.0,
+        "mean": 1802479758.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY home_phone ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(home_phone, 1802479758.0) AS home_phone_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Owners",
+      "column": "cell_number",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Owners), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY cell_number ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(cell_number, 0) AS cell_number_capped FROM Owners) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "dog_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY dog_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(dog_id, 14.0) AS dog_id_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "owner_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 20.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 14.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.2,
+        "duplicate_count": 3,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY owner_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(owner_id, 14.0) AS owner_id_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "abandoned_yn",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 86.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "median": 0.0,
+        "p95": 1.0,
+        "mean": 0.2,
+        "duplicate_count": 13,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY abandoned_yn ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(abandoned_yn, 1.0) AS abandoned_yn_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "breed_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 80.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 12,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY breed_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(breed_code, 0) AS breed_code_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "size_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 80.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 12,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY size_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(size_code, 0) AS size_code_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(name, 0) AS name_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "age",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 46.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 9.0,
+        "median": 4.0,
+        "p95": 9.0,
+        "mean": 5.066666666666666,
+        "duplicate_count": 7,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY age ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(age, 9.0) AS age_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "date_of_birth",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_of_birth ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_of_birth, 0) AS date_of_birth_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "gender",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 86.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 1.0,
+        "median": 0.0,
+        "p95": 1.0,
+        "mean": 0.4,
+        "duplicate_count": 13,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY gender ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(gender, 1.0) AS gender_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "weight",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.39,
+        "max": 9.8,
+        "median": 6.92,
+        "p95": 9.48,
+        "mean": 6.014666666666667,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY weight ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(weight, 9.48) AS weight_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "date_arrived",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_arrived ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_arrived, 0) AS date_arrived_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "date_adopted",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_adopted ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_adopted, 0) AS date_adopted_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Dogs",
+      "column": "date_departed",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Dogs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_departed ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_departed, 0) AS date_departed_capped FROM Dogs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "professional_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY professional_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(professional_id, 14.0) AS professional_id_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "role_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 86.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 13,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY role_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(role_code, 0) AS role_code_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "first_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY first_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(first_name, 0) AS first_name_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "street",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY street ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(street, 0) AS street_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "city",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY city ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(city, 0) AS city_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "state",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 13.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY state ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(state, 0) AS state_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "zip_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 2281.0,
+        "max": 98844.0,
+        "median": 43129.0,
+        "p95": 84515.0,
+        "mean": 46778.46666666667,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY zip_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(zip_code, 84515.0) AS zip_code_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "last_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY last_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(last_name, 0) AS last_name_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "email_address",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY email_address ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(email_address, 0) AS email_address_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "home_phone",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY home_phone ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(home_phone, 0) AS home_phone_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Professionals",
+      "column": "cell_number",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 230569697.0,
+        "max": 230569697.0,
+        "median": 230569697.0,
+        "p95": 230569697.0,
+        "mean": 230569697.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Professionals), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY cell_number ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(cell_number, 230569697.0) AS cell_number_capped FROM Professionals) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "treatment_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.0,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY treatment_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(treatment_id, 14.0) AS treatment_id_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "dog_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 10.0,
+        "p95": 15.0,
+        "mean": 9.533333333333333,
+        "duplicate_count": 6,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY dog_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(dog_id, 15.0) AS dog_id_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "professional_id",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 46.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 4.0,
+        "max": 14.0,
+        "median": 8.0,
+        "p95": 14.0,
+        "mean": 8.2,
+        "duplicate_count": 7,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY professional_id ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(professional_id, 14.0) AS professional_id_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "treatment_type_code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 80.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 12,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY treatment_type_code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(treatment_type_code, 0) AS treatment_type_code_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "date_of_treatment",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY date_of_treatment ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(date_of_treatment, 0) AS date_of_treatment_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Treatments",
+      "column": "cost_of_treatment",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 139.0,
+        "max": 945.0,
+        "median": 429.0,
+        "p95": 852.0,
+        "mean": 490.73333333333335,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Treatments), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY cost_of_treatment ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(cost_of_treatment, 852.0) AS cost_of_treatment_capped FROM Treatments) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

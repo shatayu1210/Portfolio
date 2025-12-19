@@ -1,0 +1,3 @@
+Configuration,dq_robust_1pct,dq_robust_5pct,MAPE,MAE,Literal Acc,Note Coverage
+Baseline (Base Model),78.1%,79.7%,10.22,134.38,37.1%,100.0%
+Fine-Tuned (500 Dataset),60.2%,60.2%,0.39,203.51,36.4%,100.0%

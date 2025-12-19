@@ -1,0 +1,675 @@
+{
+  "db_id": "concert_singer",
+  "tables": [
+    {
+      "name": "stadium",
+      "ddl": "CREATE TABLE \"stadium\" (\n\"Stadium_ID\" int,\n\"Location\" text,\n\"Name\" text,\n\"Capacity\" int,\n\"Highest\" int,\n\"Lowest\" int,\n\"Average\" int,\nPRIMARY KEY (\"Stadium_ID\")\n)",
+      "columns": [
+        {
+          "name": "Stadium_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Location",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Capacity",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Highest",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Lowest",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Average",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "singer",
+      "ddl": "CREATE TABLE \"singer\" (\n\"Singer_ID\" int,\n\"Name\" text,\n\"Country\" text,\n\"Song_Name\" text,\n\"Song_release_year\" text,\n\"Age\" int,\n\"Is_male\" bool,\nPRIMARY KEY (\"Singer_ID\")\n)",
+      "columns": [
+        {
+          "name": "Singer_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Country",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Song_Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Song_release_year",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Age",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Is_male",
+          "type": "bool",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "concert",
+      "ddl": "CREATE TABLE \"concert\" (\n\"concert_ID\" int,\n\"concert_Name\" text,\n\"Theme\" text,\n\"Stadium_ID\" text,\n\"Year\" text,\nPRIMARY KEY (\"concert_ID\"),\nFOREIGN KEY (\"Stadium_ID\") REFERENCES \"stadium\"(\"Stadium_ID\")\n)",
+      "columns": [
+        {
+          "name": "concert_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "concert_Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Theme",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Stadium_ID",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Year",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "concert.Stadium_ID",
+          "to": "stadium.Stadium_ID"
+        }
+      ]
+    },
+    {
+      "name": "singer_in_concert",
+      "ddl": "CREATE TABLE \"singer_in_concert\" (\n\"concert_ID\" int,\n\"Singer_ID\" text,\nPRIMARY KEY (\"concert_ID\",\"Singer_ID\"),\nFOREIGN KEY (\"concert_ID\") REFERENCES \"concert\"(\"concert_ID\"),\nFOREIGN KEY (\"Singer_ID\") REFERENCES \"singer\"(\"Singer_ID\")\n)",
+      "columns": [
+        {
+          "name": "concert_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Singer_ID",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "singer_in_concert.Singer_ID",
+          "to": "singer.Singer_ID"
+        },
+        {
+          "from": "singer_in_concert.concert_ID",
+          "to": "concert.concert_ID"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "stadium",
+      "column": "Stadium_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 10.0,
+        "median": 5.0,
+        "p95": 10.0,
+        "mean": 5.222222222222222,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Stadium_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Stadium_ID, 10.0) AS Stadium_ID_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Location",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Location ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Location, 0) AS Location_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Name, 0) AS Name_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Capacity",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 2000.0,
+        "max": 52500.0,
+        "median": 4000.0,
+        "p95": 52500.0,
+        "mean": 10621.666666666666,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Capacity ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Capacity, 52500.0) AS Capacity_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Highest",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 780.0,
+        "max": 4812.0,
+        "median": 1125.0,
+        "p95": 4812.0,
+        "mean": 1737.5555555555557,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Highest ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Highest, 4812.0) AS Highest_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Lowest",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 315.0,
+        "max": 1294.0,
+        "median": 411.0,
+        "p95": 1294.0,
+        "mean": 579.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Lowest ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Lowest, 1294.0) AS Lowest_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "stadium",
+      "column": "Average",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 552.0,
+        "max": 2106.0,
+        "median": 642.0,
+        "p95": 2106.0,
+        "mean": 917.8888888888889,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM stadium), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Average ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Average, 2106.0) AS Average_capped FROM stadium) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Singer_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 6.0,
+        "median": 3.5,
+        "p95": 6.0,
+        "mean": 3.5,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Singer_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Singer_ID, 6.0) AS Singer_ID_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Name, 0) AS Name_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Country",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 50.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 3,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Country ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Country, 0) AS Country_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Song_Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Song_Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Song_Name, 0) AS Song_Name_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Song_release_year",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 1992.0,
+        "max": 2016.0,
+        "median": 2010.5,
+        "p95": 2016.0,
+        "mean": 2007.6666666666667,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Song_release_year ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Song_release_year, 2016.0) AS Song_release_year_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Age",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 25.0,
+        "max": 52.0,
+        "median": 36.5,
+        "p95": 52.0,
+        "mean": 37.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Age ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Age, 52.0) AS Age_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer",
+      "column": "Is_male",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 66.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 4,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Is_male ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Is_male, 0) AS Is_male_capped FROM singer) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "concert",
+      "column": "concert_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 6.0,
+        "median": 3.5,
+        "p95": 6.0,
+        "mean": 3.5,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY concert_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(concert_ID, 6.0) AS concert_ID_capped FROM concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "concert",
+      "column": "concert_Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 16.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY concert_Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(concert_Name, 0) AS concert_Name_capped FROM concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "concert",
+      "column": "Theme",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Theme ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Theme, 0) AS Theme_capped FROM concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "concert",
+      "column": "Stadium_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 16.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 10.0,
+        "median": 4.5,
+        "p95": 10.0,
+        "mean": 5.166666666666667,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Stadium_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Stadium_ID, 10.0) AS Stadium_ID_capped FROM concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "concert",
+      "column": "Year",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 66.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 2014.0,
+        "max": 2015.0,
+        "median": 2014.5,
+        "p95": 2015.0,
+        "mean": 2014.5,
+        "duplicate_count": 4,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Year, 2015.0) AS Year_capped FROM concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer_in_concert",
+      "column": "concert_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 40.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 6.0,
+        "median": 2.5,
+        "p95": 6.0,
+        "mean": 3.0,
+        "duplicate_count": 4,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer_in_concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY concert_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(concert_ID, 6.0) AS concert_ID_capped FROM singer_in_concert) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "singer_in_concert",
+      "column": "Singer_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 50.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": 2.0,
+        "max": 6.0,
+        "median": 3.5,
+        "p95": 6.0,
+        "mean": 3.9,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM singer_in_concert), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Singer_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Singer_ID, 6.0) AS Singer_ID_capped FROM singer_in_concert) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

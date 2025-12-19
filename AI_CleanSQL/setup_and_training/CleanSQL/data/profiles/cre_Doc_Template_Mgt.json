@@ -1,0 +1,564 @@
+{
+  "db_id": "cre_Doc_Template_Mgt",
+  "tables": [
+    {
+      "name": "Ref_Template_Types",
+      "ddl": "CREATE TABLE Ref_Template_Types (\nTemplate_Type_Code CHAR(15) NOT NULL,\nTemplate_Type_Description VARCHAR(255) NOT NULL,\nPRIMARY KEY (Template_Type_Code)\n)",
+      "columns": [
+        {
+          "name": "Template_Type_Code",
+          "type": "CHAR(15)",
+          "notnull": true,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Template_Type_Description",
+          "type": "VARCHAR(255)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "Templates",
+      "ddl": "CREATE TABLE Templates (\nTemplate_ID INTEGER NOT NULL,\nVersion_Number INTEGER NOT NULL,\nTemplate_Type_Code CHAR(15) NOT NULL,\nDate_Effective_From DATETIME,\nDate_Effective_To DATETIME,\nTemplate_Details VARCHAR(255) NOT NULL,\nPRIMARY KEY (Template_ID),\nFOREIGN KEY (Template_Type_Code) REFERENCES Ref_Template_Types (Template_Type_Code)\n)",
+      "columns": [
+        {
+          "name": "Template_ID",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Version_Number",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Template_Type_Code",
+          "type": "CHAR(15)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Date_Effective_From",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Date_Effective_To",
+          "type": "DATETIME",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Template_Details",
+          "type": "VARCHAR(255)",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Templates.Template_Type_Code",
+          "to": "Ref_Template_Types.Template_Type_Code"
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "ddl": "CREATE TABLE Documents (\nDocument_ID INTEGER NOT NULL,\nTemplate_ID INTEGER,\nDocument_Name VARCHAR(255),\nDocument_Description VARCHAR(255),\nOther_Details VARCHAR(255),\nPRIMARY KEY (Document_ID),\nFOREIGN KEY (Template_ID) REFERENCES Templates (Template_ID)\n)",
+      "columns": [
+        {
+          "name": "Document_ID",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Template_ID",
+          "type": "INTEGER",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Document_Name",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Document_Description",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Other_Details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Documents.Template_ID",
+          "to": "Templates.Template_ID"
+        }
+      ]
+    },
+    {
+      "name": "Paragraphs",
+      "ddl": "CREATE TABLE Paragraphs (\nParagraph_ID INTEGER NOT NULL,\nDocument_ID INTEGER NOT NULL,\nParagraph_Text VARCHAR(255),\nOther_Details VARCHAR(255),\nPRIMARY KEY (Paragraph_ID),\nFOREIGN KEY (Document_ID) REFERENCES Documents (Document_ID)\n)",
+      "columns": [
+        {
+          "name": "Paragraph_ID",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Document_ID",
+          "type": "INTEGER",
+          "notnull": true,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Paragraph_Text",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Other_Details",
+          "type": "VARCHAR(255)",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "Paragraphs.Document_ID",
+          "to": "Documents.Document_ID"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "Ref_Template_Types",
+      "column": "Template_Type_Code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Ref_Template_Types), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_Type_Code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_Type_Code, 0) AS Template_Type_Code_capped FROM Ref_Template_Types) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Ref_Template_Types",
+      "column": "Template_Type_Description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Ref_Template_Types), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_Type_Description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_Type_Description, 0) AS Template_Type_Description_capped FROM Ref_Template_Types) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Template_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 25.0,
+        "median": 14.5,
+        "p95": 24.0,
+        "mean": 13.65,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_ID, 24.0) AS Template_ID_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Version_Number",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 50.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 9.0,
+        "median": 5.0,
+        "p95": 9.0,
+        "mean": 5.15,
+        "duplicate_count": 10,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Version_Number ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Version_Number, 9.0) AS Version_Number_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Template_Type_Code",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 75.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 15,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_Type_Code ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_Type_Code, 0) AS Template_Type_Code_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Date_Effective_From",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Date_Effective_From ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Date_Effective_From, 0) AS Date_Effective_From_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Date_Effective_To",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Date_Effective_To ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Date_Effective_To, 0) AS Date_Effective_To_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Templates",
+      "column": "Template_Details",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 95.0,
+        "total_rows": 20,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 19,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Templates), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_Details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_Details, 0) AS Template_Details_capped FROM Templates) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Documents",
+      "column": "Document_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 0.0,
+        "max": 385906526.0,
+        "median": 3830.0,
+        "p95": 16514113.0,
+        "mean": 27166966.333333332,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Documents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Document_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Document_ID, 16514113.0) AS Document_ID_capped FROM Documents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Documents",
+      "column": "Template_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 20.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 25.0,
+        "median": 11.0,
+        "p95": 25.0,
+        "mean": 13.266666666666667,
+        "duplicate_count": 3,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Documents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Template_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Template_ID, 25.0) AS Template_ID_capped FROM Documents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Documents",
+      "column": "Document_Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Documents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Document_Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Document_Name, 0) AS Document_Name_capped FROM Documents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Documents",
+      "column": "Document_Description",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Documents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Document_Description ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Document_Description, 0) AS Document_Description_capped FROM Documents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Documents",
+      "column": "Other_Details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Documents), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Other_Details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Other_Details, 0) AS Other_Details_capped FROM Documents) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Paragraphs",
+      "column": "Paragraph_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 7.0,
+        "max": 946335436.0,
+        "median": 1104059.0,
+        "p95": 765713812.0,
+        "mean": 261819379.8,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Paragraphs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Paragraph_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Paragraph_ID, 765713812.0) AS Paragraph_ID_capped FROM Paragraphs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Paragraphs",
+      "column": "Document_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": 3.0,
+        "max": 385906526.0,
+        "median": 33930.0,
+        "p95": 16514113.0,
+        "mean": 28258201.866666667,
+        "duplicate_count": 5,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Paragraphs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Document_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Document_ID, 16514113.0) AS Document_ID_capped FROM Paragraphs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Paragraphs",
+      "column": "Paragraph_Text",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 6.667,
+        "total_rows": 15,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Paragraphs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Paragraph_Text ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Paragraph_Text, 0) AS Paragraph_Text_capped FROM Paragraphs) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "Paragraphs",
+      "column": "Other_Details",
+      "metrics": {
+        "null_pct": 100.0,
+        "dup_pct": 0.0,
+        "total_rows": 15,
+        "missing_count": 15,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM Paragraphs), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Other_Details ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Other_Details, 0) AS Other_Details_capped FROM Paragraphs) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

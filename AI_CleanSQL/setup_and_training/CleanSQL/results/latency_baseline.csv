@@ -1,0 +1,2 @@
+question_id,db_id,avg_latency,min_latency,max_latency,std_latency,num_runs
+stage2_6,student_transcripts_tracking,19.106824925999945,19.106824925999945,19.106824925999945,0.0,1

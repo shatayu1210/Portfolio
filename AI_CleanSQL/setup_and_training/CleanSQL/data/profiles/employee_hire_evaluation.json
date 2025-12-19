@@ -1,0 +1,563 @@
+{
+  "db_id": "employee_hire_evaluation",
+  "tables": [
+    {
+      "name": "employee",
+      "ddl": "CREATE TABLE \"employee\" (\n\"Employee_ID\" int,\n\"Name\" text,\n\"Age\" int,\n\"City\" text,\nPRIMARY KEY (\"Employee_ID\")\n)",
+      "columns": [
+        {
+          "name": "Employee_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Age",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "City",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "shop",
+      "ddl": "CREATE TABLE \"shop\" (\n\"Shop_ID\" int,\n\"Name\" text,\n\"Location\" text,\n\"District\" text,\n\"Number_products\" int,\n\"Manager_name\" text,\nPRIMARY KEY (\"Shop_ID\")\n)",
+      "columns": [
+        {
+          "name": "Shop_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Location",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "District",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Number_products",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Manager_name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "hiring",
+      "ddl": "CREATE TABLE \"hiring\" (\n\"Shop_ID\" int,\n\"Employee_ID\" int,\n\"Start_from\" text,\n\"Is_full_time\" bool,\nPRIMARY KEY (\"Employee_ID\"),\nFOREIGN KEY (`Shop_ID`) REFERENCES `shop`(`Shop_ID`),\nFOREIGN KEY (`Employee_ID`) REFERENCES `employee`(`Employee_ID`)\n)",
+      "columns": [
+        {
+          "name": "Shop_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Employee_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Start_from",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Is_full_time",
+          "type": "bool",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "hiring.Employee_ID",
+          "to": "employee.Employee_ID"
+        },
+        {
+          "from": "hiring.Shop_ID",
+          "to": "shop.Shop_ID"
+        }
+      ]
+    },
+    {
+      "name": "evaluation",
+      "ddl": "CREATE TABLE \"evaluation\" (\n\"Employee_ID\" text,\n\"Year_awarded\" text,\n\"Bonus\" real,\nPRIMARY KEY (\"Employee_ID\",\"Year_awarded\"),\nFOREIGN KEY (`Employee_ID`) REFERENCES `employee`(`Employee_ID`)\n)",
+      "columns": [
+        {
+          "name": "Employee_ID",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Year_awarded",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Bonus",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "evaluation.Employee_ID",
+          "to": "employee.Employee_ID"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "employee",
+      "column": "Employee_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 10.0,
+        "median": 5.5,
+        "p95": 10.0,
+        "mean": 5.5,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM employee), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Employee_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Employee_ID, 10.0) AS Employee_ID_capped FROM employee) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "employee",
+      "column": "Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM employee), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Name, 0) AS Name_capped FROM employee) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "employee",
+      "column": "Age",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 20.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": 23.0,
+        "max": 43.0,
+        "median": 29.5,
+        "p95": 43.0,
+        "mean": 31.9,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM employee), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Age ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Age, 43.0) AS Age_capped FROM employee) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "employee",
+      "column": "City",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 50.0,
+        "total_rows": 10,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM employee), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY City ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(City, 0) AS City_capped FROM employee) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "Shop_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 9.0,
+        "median": 5.0,
+        "p95": 9.0,
+        "mean": 5.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Shop_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Shop_ID, 9.0) AS Shop_ID_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Name, 0) AS Name_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "Location",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Location ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Location, 0) AS Location_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "District",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY District ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(District, 0) AS District_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "Number_products",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": 1600.0,
+        "max": 15000.0,
+        "median": 5000.0,
+        "p95": 15000.0,
+        "mean": 6685.111111111111,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Number_products ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Number_products, 15000.0) AS Number_products_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "shop",
+      "column": "Manager_name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 9,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM shop), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Manager_name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Manager_name, 0) AS Manager_name_capped FROM shop) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "hiring",
+      "column": "Shop_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 14.286,
+        "total_rows": 7,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 8.0,
+        "median": 4.0,
+        "p95": 8.0,
+        "mean": 3.857142857142857,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM hiring), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Shop_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Shop_ID, 8.0) AS Shop_ID_capped FROM hiring) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "hiring",
+      "column": "Employee_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 7,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 7.0,
+        "median": 4.0,
+        "p95": 7.0,
+        "mean": 4.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM hiring), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Employee_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Employee_ID, 7.0) AS Employee_ID_capped FROM hiring) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "hiring",
+      "column": "Start_from",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 7,
+        "missing_count": 0,
+        "min": 2003.0,
+        "max": 2013.0,
+        "median": 2010.0,
+        "p95": 2013.0,
+        "mean": 2009.4285714285713,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM hiring), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Start_from ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Start_from, 2013.0) AS Start_from_capped FROM hiring) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "hiring",
+      "column": "Is_full_time",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 71.429,
+        "total_rows": 7,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 5,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM hiring), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Is_full_time ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Is_full_time, 0) AS Is_full_time_capped FROM hiring) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "evaluation",
+      "column": "Employee_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 16.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 10.0,
+        "median": 3.0,
+        "p95": 10.0,
+        "mean": 4.166666666666667,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM evaluation), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Employee_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Employee_ID, 10.0) AS Employee_ID_capped FROM evaluation) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "evaluation",
+      "column": "Year_awarded",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 16.667,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 2011.0,
+        "max": 2018.0,
+        "median": 2016.0,
+        "p95": 2018.0,
+        "mean": 2015.5,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM evaluation), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Year_awarded ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Year_awarded, 2018.0) AS Year_awarded_capped FROM evaluation) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "evaluation",
+      "column": "Bonus",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 6,
+        "missing_count": 0,
+        "min": 2900.0,
+        "max": 4000.0,
+        "median": 3200.0,
+        "p95": 4000.0,
+        "mean": 3250.0,
+        "duplicate_count": 2,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM evaluation), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Bonus ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Bonus, 4000.0) AS Bonus_capped FROM evaluation) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

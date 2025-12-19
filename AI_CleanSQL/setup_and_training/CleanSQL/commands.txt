@@ -1,0 +1,203 @@
+# Profile database (schema, per column profiles, rulebook, dictionary)
+# Take user query in NL
+# Stage 1 = NL to Basic SQL
+# Stage 2 = Basic SQL to Robust SQL (incl imputations as per rulebook and dataset quality)
+# Return Basic and DQ-Robust versions of SQL back
+
+
+# Google Colab Steps
+#
+# 0. Upload and open `CleanSQL_notebook.ipynb` in Google Colab. Ensure this notebook and
+#    the `CleanSQL` folder are both under:
+#      /content/drive/MyDrive/CleanSQL
+# 0.1 In a Colab cell (once), run:
+#      !mkdir -p /content/drive/MyDrive/CleanSQL
+#      %cd /content/drive/MyDrive/CleanSQL
+# 0.2 Then execute the remaining commands from this file as needed, or create
+#     another notebook that also `%cd`’s to the same path for fine-tuning steps.
+
+1) Mounting Drive for persistence
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Go to CleanSQL Folder
+!mkdir -p /content/drive/MyDrive/CleanSQL
+%cd /content/drive/MyDrive/CleanSQL
+
+# Move the folder contents manually
+
+
+2) Install dependencies
+# Python packages
+!pip install -r requirements.txt
+
+# System dependencies for vLLM
+!apt-get update && apt-get install -y git-lfs
+
+
+3) Start vLLM in background
+!bash scripts/serve_vllm.sh &
+
+# Wait for vLLM to start (check logs)
+!sleep 30
+!curl http://127.0.0.1:8000/health || echo "vLLM not ready yet"
+
+
+
+4) Select stage-1 set (NL to basic SQL) evaluation
+!bash scripts/select_stage1.sh
+
+
+
+5) Build RAG index
+!bash scripts/build_rag.sh
+
+# Optionally checking the RAG contents
+
+import qdrant_client
+
+# Connect to the embedded Qdrant index
+client = qdrant_client.QdrantClient(path="work/qdrant_index")
+
+
+<Separate cell>
+# Continuation of above
+
+# List all collections
+collections = client.get_collections()
+print("RAG Collections:", [c.name for c in collections.collections])
+
+# For each collection, check point count and vector structure
+for col in collections.collections:
+    info = client.get_collection(col.name)
+    count = client.count(col.name)
+    print(f"\n{col.name}:")
+    print(f"  - Points: {count.count}")
+    print(f"  - Dense vectors: {info.config.params.vectors}")
+    print(f"  - Sparse vectors: {info.config.params.sparse_vectors}")
+    
+    # Optional: Peek at a sample payload
+    if count.count > 0:
+        sample = client.scroll(col.name, limit=1)[0]
+        print(f"  - Sample payload keys: {list(sample[0].payload.keys())}")
+
+
+
+6) Run the stage 1 evaluation (Prompt engg techniques for NL to SQL)
+
+# All techniques (baseline, fewshot, cot, sc, tot)
+!bash scripts/run_all_stage1.sh
+
+# Or run one technique at a time (useful on Colab if one crashes)
+!bash scripts/run_all_stage1.sh baseline
+!bash scripts/run_all_stage1.sh fewshot
+!bash scripts/run_all_stage1.sh cot
+!bash scripts/run_all_stage1.sh sc
+!bash scripts/run_all_stage1.sh tot
+
+
+# Run Stage 1 Aggregation to persist on drive
+# Stage-1 only
+!python -m cleansql.eval.aggregate --stage1_glob "results/stage1_*.csv" --out_dir "results"
+
+
+
+
+7) Select stage-2 with synthetically corrupted data
+!bash scripts/select_stage2.sh
+
+
+
+
+8) Run stage-2 evaluations on corrupted (messy) data
+# (A) Stage-2 eval for prompt-engineering comparison at K=3 only
+
+!python -m cleansql.eval.run_stage2 --context rag_topk3 --technique baseline --out results/stage2_rag_k3_baseline.csv
+!python -m cleansql.eval.run_stage2 --context rag_topk3 --technique fewshot  --out results/stage2_rag_k3_fewshot.csv
+!python -m cleansql.eval.run_stage2 --context rag_topk3 --technique cot      --out results/stage2_rag_k3_cot.csv
+!python -m cleansql.eval.run_stage2 --context rag_topk3 --technique sc       --out results/stage2_rag_k3_sc.csv
+!python -m cleansql.eval.run_stage2 --context rag_topk3 --technique tot      --out results/stage2_rag_k3_tot.csv
+
+
+# (B) RAG vs No-RAG on corrupted data (numerical closeness, Self-Consistency mainline)
+
+# No RAG baseline: plain text-to-SQL, no DQ repairs
+!python -m cleansql.eval.run_stage2 --context schema_only --technique baseline --out results/stage2_schema_only_baseline.csv
+
+# RAG-enabled CleanSQL: SC + repairs (you can use k=3 or k=5 as your main RAG setting)
+!python -m cleansql.eval.run_stage2 --context rag_topk5   --technique sc --out results/stage2_rag_k5_sc.csv
+
+
+# (C) RAG vs RAG comparison (topK=5 vs topK=8+rerank, Self-Consistency mainline)
+
+!python -m cleansql.eval.run_stage2 --context rag_topk5       --technique sc --out results/stage2_rag_k5_sc.csv
+!python -m cleansql.eval.run_stage2 --context rag_topk8_rerank --technique sc --out results/stage2_rag_k8r_sc.csv
+
+
+9) Aggregate all the results, persist on drive
+
+
+# Stage-2 only
+!python -m cleansql.eval.aggregate --stage2_glob "results/stage2_*.csv" --out_dir "results"
+
+# Or both (Stage-1 + Stage-2)
+!python -m cleansql.eval.aggregate --stage1_glob "results/stage1_*.csv" --stage2_glob "results/stage2_*.csv" --out_dir "results"
+
+
+
+# Misc Monitoring
+# Check vLLM status
+!ps aux | grep vllm
+!tail -f /content/drive/MyDrive/CleanSQL/nohup.out  # If you redirect logs
+
+# Check GPU memory
+!nvidia-smi
+
+# Check results
+!ls -la results/
+!head results/summary_stage1.csv
+
+
+
+----------------------------------------------------------------
+
+# Local Steps
+
+1) Install required dependencies
+`pip install -r requirements.txt`
+
+2) Start vLLM (new terminal)
+`bash scripts/serve_vllm.sh`
+
+3) Prepare Spider 1.0 (placing SQLite DBs & dev JSON under `data/spider_databases` and `data/dev_gold.json`)
+Download from https://drive.google.com/file/d/1403EGqzIDoHMdQF4c9Bkyl7dZLZ5Wt6J/view
+unzip spider_data.zip
+create data folder inside CleanSQL
+move spider_data/database to data as spider_databases  
+move spider_data/dev.json to data as dev_gold.json
+
+4) Select Stage-1 set (Clean spider dbs with a comprehensive variety of nl-sql pairs)
+`bash scripts/select_stage1.sh`
+
+5) Build RAG index (profiling the Stage-1 DBs, then building RAG index)
+`bash scripts/build_rag.sh`
+
+6) Run **prompt_engineering_eval** (Stage-1, RAG ON, topK=3)
+`bash scripts/run_all_stage1.sh`
+
+7) Select Stage-2 DBs & queries; **synthesize corrupted set** (reproducible)
+`bash scripts/select_stage2.sh`
+
+8) Run **rag_norag_eval** (full flow; CoT only) on Stage-2 DBs to evaluate closeness for corrupted data vs clean
+`python -m cleansql.eval.run_stage2 --context schema_only --out results/stage2_schema_only.csv`
+
+9) Run **rag_rag_eval** (full flow; CoT only)
+`python -m cleansql.eval.run_stage2 --context rag_topk3 --out results/stage2_rag_k3.csv`
+`python -m cleansql.eval.run_stage2 --context rag_topk5 --out results/stage2_rag_k5.csv`
+`python -m cleansql.eval.run_stage2 --context rag_topk8_rerank --out results/stage2_rag_k8r.csv`
+
+10) Aggregate all results
+`python -m cleansql.eval.aggregate --stage1_glob "results/stage1_*.csv" --stage2_glob "results/stage2_*.csv"`
+
+11) Optional **lora_peft_finetune** (A100 recommended; L4 works with QLoRA)
+`bash scripts/peft_train.sh`

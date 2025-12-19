@@ -1,0 +1,4 @@
+# Streamlit config to allow large file uploads
+[server]
+maxUploadSize = 1024
+maxMessageSize = 1024

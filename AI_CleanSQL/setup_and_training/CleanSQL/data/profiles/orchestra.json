@@ -1,0 +1,732 @@
+{
+  "db_id": "orchestra",
+  "tables": [
+    {
+      "name": "conductor",
+      "ddl": "CREATE TABLE \"conductor\" (\n\"Conductor_ID\" int,\n\"Name\" text,\n\"Age\" int,\n\"Nationality\" text,\n\"Year_of_Work\" int,\nPRIMARY KEY (\"Conductor_ID\")\n)",
+      "columns": [
+        {
+          "name": "Conductor_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Name",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Age",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Nationality",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Year_of_Work",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": []
+    },
+    {
+      "name": "orchestra",
+      "ddl": "CREATE TABLE \"orchestra\" (\n\"Orchestra_ID\" int,\n\"Orchestra\" text,\n\"Conductor_ID\" int,\n\"Record_Company\" text,\n\"Year_of_Founded\" real,\n\"Major_Record_Format\" text,\nPRIMARY KEY (\"Orchestra_ID\"),\nFOREIGN KEY (`Conductor_ID`) REFERENCES `conductor`(`Conductor_ID`)\n)",
+      "columns": [
+        {
+          "name": "Orchestra_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Orchestra",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Conductor_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Record_Company",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Year_of_Founded",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Major_Record_Format",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "orchestra.Conductor_ID",
+          "to": "conductor.Conductor_ID"
+        }
+      ]
+    },
+    {
+      "name": "performance",
+      "ddl": "CREATE TABLE \"performance\" (\n\"Performance_ID\" int,\n\"Orchestra_ID\" int,\n\"Type\" text,\n\"Date\" text,\n\"Official_ratings_(millions)\" real,\n\"Weekly_rank\" text,\n\"Share\" text,\nPRIMARY KEY (\"Performance_ID\"),\nFOREIGN KEY (`Orchestra_ID`) REFERENCES `orchestra`(`Orchestra_ID`)\n)",
+      "columns": [
+        {
+          "name": "Performance_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": true
+        },
+        {
+          "name": "Orchestra_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Type",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Date",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Official_ratings_(millions)",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Weekly_rank",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Share",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "performance.Orchestra_ID",
+          "to": "orchestra.Orchestra_ID"
+        }
+      ]
+    },
+    {
+      "name": "show",
+      "ddl": "CREATE TABLE \"show\" (\n\"Show_ID\" int,\n\"Performance_ID\" int,\n\"If_first_show\" bool,\n\"Result\" text,\n\"Attendance\" real,\nFOREIGN KEY (`Performance_ID`) REFERENCES `performance`(`Performance_ID`)\n)",
+      "columns": [
+        {
+          "name": "Show_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Performance_ID",
+          "type": "INT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "If_first_show",
+          "type": "bool",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Result",
+          "type": "TEXT",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        },
+        {
+          "name": "Attendance",
+          "type": "REAL",
+          "notnull": false,
+          "default": null,
+          "pk": false
+        }
+      ],
+      "foreign_keys": [
+        {
+          "from": "show.Performance_ID",
+          "to": "performance.Performance_ID"
+        }
+      ]
+    }
+  ],
+  "health": [
+    {
+      "table": "conductor",
+      "column": "Conductor_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 12.0,
+        "median": 6.5,
+        "p95": 11.0,
+        "mean": 6.5,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM conductor), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Conductor_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Conductor_ID, 11.0) AS Conductor_ID_capped FROM conductor) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "conductor",
+      "column": "Name",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM conductor), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Name ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Name, 0) AS Name_capped FROM conductor) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "conductor",
+      "column": "Age",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 33.333,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 40.0,
+        "max": 63.0,
+        "median": 43.0,
+        "p95": 50.0,
+        "mean": 45.5,
+        "duplicate_count": 4,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM conductor), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Age ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Age, 50.0) AS Age_capped FROM conductor) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "conductor",
+      "column": "Nationality",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 75.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 9,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM conductor), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Nationality ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Nationality, 0) AS Nationality_capped FROM conductor) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "conductor",
+      "column": "Year_of_Work",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 41.667,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 6.0,
+        "max": 21.0,
+        "median": 11.5,
+        "p95": 20.0,
+        "mean": 13.333333333333334,
+        "duplicate_count": 5,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM conductor), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Year_of_Work ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Year_of_Work, 20.0) AS Year_of_Work_capped FROM conductor) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Orchestra_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 12.0,
+        "median": 6.5,
+        "p95": 11.0,
+        "mean": 6.5,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Orchestra_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Orchestra_ID, 11.0) AS Orchestra_ID_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Orchestra",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Orchestra ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Orchestra, 0) AS Orchestra_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Conductor_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 12.0,
+        "median": 6.5,
+        "p95": 11.0,
+        "mean": 6.5,
+        "duplicate_count": 0,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Conductor_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Conductor_ID, 11.0) AS Conductor_ID_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Record_Company",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 8.333,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Record_Company ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Record_Company, 0) AS Record_Company_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Year_of_Founded",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 41.667,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": 2002.0,
+        "max": 2009.0,
+        "median": 2005.0,
+        "p95": 2008.0,
+        "mean": 2005.1666666666667,
+        "duplicate_count": 5,
+        "outlier_count": 1
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Year_of_Founded ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Year_of_Founded, 2008.0) AS Year_of_Founded_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "orchestra",
+      "column": "Major_Record_Format",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 75.0,
+        "total_rows": 12,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 9,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM orchestra), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Major_Record_Format ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Major_Record_Format, 0) AS Major_Record_Format_capped FROM orchestra) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Performance_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 11.0,
+        "median": 6.0,
+        "p95": 11.0,
+        "mean": 6.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Performance_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Performance_ID, 11.0) AS Performance_ID_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Orchestra_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 11.0,
+        "median": 6.0,
+        "p95": 11.0,
+        "mean": 6.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Orchestra_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Orchestra_ID, 11.0) AS Orchestra_ID_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Type",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Type ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Type, 0) AS Type_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Date",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 9.091,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": 2007.0,
+        "max": 2007.0,
+        "median": 2007.0,
+        "p95": 2007.0,
+        "mean": 2007.0,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Date ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Date, 2007.0) AS Date_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Official_ratings_(millions)",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": 5.2,
+        "max": 11.58,
+        "median": 8.36,
+        "p95": 11.58,
+        "mean": 8.404545454545454,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Official_ratings_(millions) ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Official_ratings_(millions), 11.58) AS Official_ratings_(millions)_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Weekly_rank",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 9.091,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 15.0,
+        "median": 8.5,
+        "p95": 15.0,
+        "mean": 8.6,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Weekly_rank ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Weekly_rank, 15.0) AS Weekly_rank_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "performance",
+      "column": "Share",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 11,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM performance), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Share ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Share, 0) AS Share_capped FROM performance) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "show",
+      "column": "Show_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 5.0,
+        "median": 3.0,
+        "p95": 5.0,
+        "mean": 3.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM show), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Show_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Show_ID, 5.0) AS Show_ID_capped FROM show) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "show",
+      "column": "Performance_ID",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": 1.0,
+        "max": 5.0,
+        "median": 3.0,
+        "p95": 5.0,
+        "mean": 3.0,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM show), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Performance_ID ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Performance_ID, 5.0) AS Performance_ID_capped FROM show) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "show",
+      "column": "If_first_show",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 20.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 1,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM show), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY If_first_show ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(If_first_show, 0) AS If_first_show_capped FROM show) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "show",
+      "column": "Result",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 60.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": null,
+        "max": null,
+        "median": null,
+        "p95": null,
+        "mean": null,
+        "duplicate_count": 3,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM show), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Result ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Result, 0) AS Result_capped FROM show) SELECT * FROM capped"
+      ]
+    },
+    {
+      "table": "show",
+      "column": "Attendance",
+      "metrics": {
+        "null_pct": 0.0,
+        "dup_pct": 0.0,
+        "total_rows": 5,
+        "missing_count": 0,
+        "min": 555.0,
+        "max": 2431.0,
+        "median": 1026.0,
+        "p95": 2431.0,
+        "mean": 1326.4,
+        "duplicate_count": 0,
+        "outlier_count": 0
+      },
+      "cte_repairs": [
+        "WITH base AS (SELECT * FROM show), dedup AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY Attendance ORDER BY rowid DESC) rn FROM base) SELECT * FROM dedup WHERE rn = 1",
+        "WITH capped AS (SELECT *, MIN(Attendance, 2431.0) AS Attendance_capped FROM show) SELECT * FROM capped"
+      ]
+    }
+  ],
+  "rulebook": [
+    "Null% <= 5 -> fill using median constant",
+    "Outliers > p95 -> cap to p95 constant using SAFE_VALUE CTE",
+    "Duplicate business keys -> keep latest by timestamp or surrogate id"
+  ],
+  "dictionaries": [],
+  "exemplars": [
+    {
+      "plan": [
+        "Scan fact table",
+        "Check metric column health and apply rulebook repairs",
+        "Deduplicate dimension on primary/business key",
+        "Join dimension",
+        "Aggregate"
+      ],
+      "basic_sql": "SELECT d.name, SUM(f.metric) FROM fact f JOIN dim d ON f.dim_id=d.id GROUP BY d.name",
+      "robust_sql": "WITH dim_dedup AS ( SELECT * FROM (   SELECT *, ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) AS rn   FROM dim ) WHERE rn = 1), capped AS ( SELECT *, MIN(metric, :metric_p95) AS metric_capped FROM fact) SELECT d.name, SUM(metric_capped) FROM capped JOIN dim_dedup d ON capped.dim_id = d.id GROUP BY d.name",
+      "notes": [
+        "1. Capped 12 (0.6%) metric outliers at p95=120000.0.",
+        "2. Deduplicated 18 (0.9%) dimension rows on business key before join."
+      ]
+    },
+    {
+      "plan": [
+        "Filter dates",
+        "Check status column health for missing/dup issues",
+        "Deduplicate orders on primary/business key",
+        "Handle nulls",
+        "Order"
+      ],
+      "basic_sql": "SELECT COUNT(*) FROM orders WHERE status='completed'",
+      "robust_sql": "WITH normalized AS ( SELECT order_id, COALESCE(status, 'unknown') AS status, order_date, updated_at FROM orders), keyed AS ( SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn FROM normalized WHERE order_date BETWEEN '2021-01-01' AND '2021-12-31') SELECT COUNT(*) FROM keyed WHERE rn = 1 AND status = 'completed'",
+      "notes": [
+        "1. Imputed 41 (2.8%) missing status values with dictionary standard labels.",
+        "2. Deduplicated 6 (0.3%) orders keeping latest updated_at."
+      ]
+    }
+  ]
+}

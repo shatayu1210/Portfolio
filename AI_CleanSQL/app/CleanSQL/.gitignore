@@ -1,0 +1,41 @@
+# env / secrets
+.env
+*.env
+!.env.example
+.streamlit/secrets.toml
+
+# python bytecode / caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+
+# virtual envs
+venv/
+.venv/
+ENV/
+env/
+
+# build / metadata
+build/
+dist/
+*.egg-info/
+
+# notebooks
+.ipynb_checkpoints/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# logs
+logs/
+*.log
+
+# data artifacts (optional: uncomment if you don't want large files in git)
+data/*.parquet
+data/*.duckdb
+data/*.csv
