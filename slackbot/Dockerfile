@@ -24,5 +24,5 @@ COPY . .
 # Expose Cloud Run's default port
 EXPOSE 8080
 
-# Use gunicorn for production (1 worker, 8 threads, long timeout)
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "300", "app:flask_app"]
+# Use uvicorn for FastAPI production
+CMD ["uvicorn", "slack_orchestrator:app", "--host", "0.0.0.0", "--port", "8080"]
