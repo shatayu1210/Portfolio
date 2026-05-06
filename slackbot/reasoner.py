@@ -61,7 +61,7 @@ def build_prompt(
     # Build PR review feedback section
     pr_feedback_section = f"\nPR Review Feedback:\n{pr_review_feedback}" if pr_review_feedback else ""
 
-    return (
+    user_text = (
         f"{risk_line}"
         f"PROJECT: apache/airflow | P50=1d P75=6d P90=23d P95=47d\n"
         f"ISSUE: {title} | LABELS: {labels_str} | ASSIGNEES: {assignee_count} | "
@@ -71,8 +71,20 @@ def build_prompt(
         f"SILENT_REVIEWERS: {silent_reviewers} | CI: {ci_status}\n"
         f"BODY: {body_truncated}\n"
         f"{comments_section}"
-        f"{pr_feedback_section}\n\n"
-        f"Analysis:"
+        f"{pr_feedback_section}"
+    )
+
+    system_prompt = (
+        "You are a bottleneck analyst for GitHub issues. "
+        "Given an issue snapshot and its risk score, write a 2-3 sentence "
+        "explanation for a non-technical scrum master. "
+        "Reference specific signals. No bullet points."
+    )
+
+    return (
+        f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
+        f"<|im_start|>user\n{user_text}<|im_end|>\n"
+        f"<|im_start|>assistant\n"
     )
 
 
