@@ -102,13 +102,21 @@ def generate_sets():
     random.shuffle(high_issues)
     random.shuffle(low_medium_issues)
     
+    # Helper to construct a set with 3 high issues in the first 10 slots
+    def build_frontloaded_set(highs, lows):
+        first_10 = highs[0:3] + lows[0:7]
+        random.shuffle(first_10)
+        
+        last_20 = [highs[3]] + lows[7:26]
+        random.shuffle(last_20)
+        
+        return first_10 + last_20
+
     # Create Set 1
-    set_1 = high_issues[0:4] + low_medium_issues[0:26]
-    random.shuffle(set_1)
+    set_1 = build_frontloaded_set(high_issues[0:4], low_medium_issues[0:26])
     
     # Create Set 2
-    set_2 = high_issues[4:8] + low_medium_issues[26:52]
-    random.shuffle(set_2)
+    set_2 = build_frontloaded_set(high_issues[4:8], low_medium_issues[26:52])
     
     with open("demo_set_1.json", "w") as f:
         json.dump(set_1, f, indent=2)
