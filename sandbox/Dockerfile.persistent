@@ -1,0 +1,25 @@
+FROM python:3.11-bullseye
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    patch \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js and pnpm for frontend tests
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm
+
+# Install Airflow & Test dependencies
+# (Note: You can adjust versions to match your repo)
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-timeout \
+    apache-airflow==2.9.0
+
+WORKDIR /opt/airflow
+
+# Keep the container alive
+CMD ["tail", "-f", "/dev/null"]

@@ -174,8 +174,33 @@ def find_file(repo_root: str, pattern: str) -> list[str]:
 
 
 def get_symbols(ts_index: dict, file_path: str) -> list[dict]:
-    """Return top-level symbols for file_path from pre-built tree-sitter index."""
-    return ts_index.get(file_path, [])
+    """Return top-level symbols for file_path from pre-built tree-sitter index.
+    
+    Handles two index formats:
+      - Old: {file: [{"name": "foo", ...}, ...]}
+      - New: {file: {"classes": ["A", ...], "functions": ["f", ...]}}
+    Always normalises to list[dict] with at least a "name" key.
+    """
+    entry = ts_index.get(file_path, [])
+    if isinstance(entry, dict):
+        # New format: {"classes": [...], "functions": [...]}
+        symbols = []
+        for kind in ("classes", "functions"):
+            for name in entry.get(kind, []):
+                if isinstance(name, str):
+                    symbols.append({"name": name, "kind": kind.rstrip("es")})
+                elif isinstance(name, dict):
+                    name.setdefault("kind", kind.rstrip("es"))
+                    symbols.append(name)
+        return symbols
+    # Old format: list of dicts or plain strings
+    result = []
+    for item in entry:
+        if isinstance(item, dict):
+            result.append(item)
+        elif isinstance(item, str):
+            result.append({"name": item})
+    return result
 
 
 def read_file_window(
@@ -777,15 +802,15 @@ def assemble_patcher_input(
     Build the full patcher input pack from an approved planner plan.
 
     Tiered context policy (approximate char budgets):
-      primary:    6000  full file if <= 300 lines, else span windows ±40 lines
-      supporting: 3000  import-resolved dependent modules (top symbols)
-      tests:      1500  relevant test file snippets
-      total cap: 12000
+      primary:    24000 full file if <= 800 lines, else span windows ±40 lines
+      supporting: 8000  import-resolved dependent modules (top symbols)
+      tests:      4000  relevant test file snippets
+      total cap: 40000
 
     Returns a dict matching the patcher input schema (orchestrator.md §2).
     """
     budget = token_budget or {
-        "primary": 6000, "supporting": 3000, "tests": 1500, "total_cap": 12000
+        "primary": 24000, "supporting": 8000, "tests": 4000, "total_cap": 40000
     }
     root = Path(repo_path)
     file_contexts: dict[str, list[dict]] = {"primary": [], "supporting": [], "tests": []}
@@ -801,7 +826,7 @@ def assemble_patcher_input(
         lines = p.read_text(errors="replace").splitlines()
         file_len = len(lines)
 
-        if file_len <= 300:
+        if file_len <= 800:
             content = "\n".join(f"{i+1}: {l}" for i, l in enumerate(lines))
         else:
             spans = [s for s in plan.code_spans if s.get("file") == file_path]
@@ -827,7 +852,7 @@ def assemble_patcher_input(
                     )
                 content = "\n\n...\n\n".join(excerpts)
             else:
-                content = "\n".join(f"{i+1}: {l}" for i, l in enumerate(lines[:150]))
+                content = "\n".join(f"{i+1}: {l}" for i, l in enumerate(lines[:500]))
 
         syms = get_symbols(ts_index, file_path)
         remaining = budget["primary"] - sum(len(c["excerpt"]) for c in file_contexts["primary"])
@@ -841,16 +866,76 @@ def assemble_patcher_input(
         used_chars += len(entry["excerpt"])
 
     # ── Supporting files (import-resolved dependencies) ────────────────────────
+    # Handles both Python (`from x import y`) and TypeScript/TSX (`import ... from './x'`)
     supporting_seen: set[str] = set(plan.files)
+
+    def _resolve_ts_import(import_path: str, source_file: str) -> str | None:
+        """Resolve a relative TS/TSX import string to a repo-relative file path."""
+        if not import_path.startswith("."):
+            return None  # Skip node_modules / absolute imports
+        source_dir = Path(source_file).parent
+        candidate_base = (source_dir / import_path).resolve()
+        # Try common extensions in order
+        for ext in (".tsx", ".ts", ".jsx", ".js"):
+            rel = candidate_base.with_suffix(ext)
+            try:
+                repo_rel = rel.relative_to(root.resolve())
+                if (root / repo_rel).is_file():
+                    return str(repo_rel)
+            except ValueError:
+                pass
+        # Also try index files (import from './dir' → './dir/index.tsx')
+        for ext in (".tsx", ".ts", ".jsx", ".js"):
+            idx = candidate_base / f"index{ext}"
+            try:
+                repo_rel = idx.relative_to(root.resolve())
+                if (root / repo_rel).is_file():
+                    return str(repo_rel)
+            except ValueError:
+                pass
+        return None
+
+    def _parse_ts_imports(file_path: str) -> list[str]:
+        """Extract import paths from a TypeScript/TSX file."""
+        p = root / file_path
+        if not p.is_file():
+            return []
+        resolved = []
+        for line in p.read_text(errors="replace").splitlines()[:60]:
+            line = line.strip()
+            # Match: import ... from './path' or import './path'
+            m = re.search(r"""from\s+['"]([^'"]+)['"]""", line)
+            if not m:
+                m = re.search(r"""import\s+['"]([^'"]+)['"]""", line)
+            if m:
+                rp = _resolve_ts_import(m.group(1), file_path)
+                if rp:
+                    resolved.append(rp)
+        return resolved[:8]
+
     for file_path in plan.files:
         if used_chars >= budget["total_cap"]:
             break
-        imports = get_imports(repo_path, file_path)
-        for imp in imports[:6]:
-            match = re.match(r"from ([\w.]+) import", imp)
-            if not match:
-                continue
-            module_path = match.group(1).replace(".", "/") + ".py"
+
+        ext = Path(file_path).suffix.lower()
+        is_ts = ext in (".ts", ".tsx", ".js", ".jsx")
+
+        if is_ts:
+            import_paths = _parse_ts_imports(file_path)
+        else:
+            # Python: parse `from module import` → module/path.py
+            raw_imports = get_imports(repo_path, file_path)
+            import_paths = []
+            for imp in raw_imports[:8]:
+                match = re.match(r"from ([\w.]+) import", imp)
+                if match:
+                    module_path = match.group(1).replace(".", "/") + ".py"
+                    if (root / module_path).is_file():
+                        import_paths.append(module_path)
+
+        for module_path in import_paths:
+            if used_chars >= budget["total_cap"]:
+                break
             if module_path in supporting_seen:
                 continue
             sup_p = root / module_path
@@ -872,6 +957,55 @@ def assemble_patcher_input(
                 "reason": "import_of_primary",
             })
             used_chars += len(file_contexts["supporting"][-1]["excerpt"])
+
+    # ── Fallback: if still 0 supporting files, try ts-index neighbours ──────
+    # This handles cases where imports couldn't be resolved (e.g. aliased paths like @/)
+    if not file_contexts["supporting"]:
+        for file_path in plan.files:
+            if used_chars >= budget["total_cap"]:
+                break
+            # Look for files in the same directory with shared symbols
+            parent_dir = Path(file_path).parent
+            sibling_candidates = [
+                str(Path(k))
+                for k in ts_index.keys()
+                if str(Path(k)).startswith(str(parent_dir) + "/")
+                and k != file_path
+                and Path(k).suffix in (".ts", ".tsx", ".py")
+            ][:4]
+
+            for sibling in sibling_candidates:
+                if sibling in supporting_seen:
+                    continue
+                sp = root / sibling
+                if not sp.is_file():
+                    continue
+                supporting_seen.add(sibling)
+                s_lines = sp.read_text(errors="replace").splitlines()
+                syms = get_symbols(ts_index, sibling)
+                remaining = budget["supporting"] - sum(
+                    len(c["excerpt"]) for c in file_contexts["supporting"]
+                )
+                if remaining <= 0:
+                    break
+                excerpt = "\n".join(f"{i+1}: {l}" for i, l in enumerate(s_lines[:80]))
+                file_contexts["supporting"].append({
+                    "file": sibling,
+                    "symbols": [s["name"] for s in syms],
+                    "excerpt": excerpt[:remaining],
+                    "reason": "same_directory_sibling",
+                })
+                used_chars += len(file_contexts["supporting"][-1]["excerpt"])
+
+    if not file_contexts["supporting"]:
+        import logging
+        logging.warning(
+            f"[assemble_patcher_input] 0 supporting files found for {plan.files}. "
+            f"Import resolution may have failed (aliased paths like '@/' are not supported). "
+            f"Consider adding the dependency files manually to plan.files."
+        )
+
+
 
     # ── Test files ────────────────────────────────────────────────────────────
     discovered = test_files or find_test_files(repo_path, plan.files)

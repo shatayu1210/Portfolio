@@ -135,13 +135,21 @@ export class PlannerPanelProvider implements vscode.WebviewViewProvider {
     );
     const nonce = getNonce();
 
+    // Read the configured server URL so the CSP allows requests to it.
+    // Always include localhost fallbacks for local dev.
+    const config = vscode.workspace.getConfiguration("autobot");
+    const serverUrl = String(config.get<string>("serverUrl") ?? "http://localhost:5000").replace(/\/$/, "");
+    const cspConnectSrc = [serverUrl, "http://127.0.0.1:5000", "http://localhost:5000"]
+      .filter((v, i, a) => a.indexOf(v) === i)  // deduplicate
+      .join(" ");
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'none';
-             connect-src http://127.0.0.1:5000 http://localhost:5000;
+             connect-src ${cspConnectSrc};
              style-src ${webview.cspSource} 'unsafe-inline';
              script-src 'nonce-${nonce}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -190,6 +198,7 @@ export class PlannerPanelProvider implements vscode.WebviewViewProvider {
 </html>`;
   }
 }
+
 
 function getNonce(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

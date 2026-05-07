@@ -325,6 +325,24 @@ def handle_adhoc_query(query: str, issue_number: int = None) -> str:
     """
     print(f"[Adhoc] Handling query: '{query}' | issue_number={issue_number}")
 
+    # ── Intent: Top-N risk query (bypass LLM toolchain) ──────────────────────
+    import re as _re
+    q_lower = query.lower()
+    is_top_query = bool(_re.search(r"top\s*(\d+)?\s*(risk|issue|scored)", q_lower))
+    if is_top_query or any(kw in q_lower for kw in ["riskiest", "highest risk", "most at risk"]):
+        n_match = _re.search(r"\b(\d+)\b", query)
+        n = int(n_match.group(1)) if n_match else 5
+        return handle_top_risk_query(n)
+
+    # ── Intent: Explain why an issue was scored this way ─────────────────
+    _EXPLAIN_KEYWORDS = [
+        "explain why", "why was", "why is", "explain score",
+        "explain #", "scored high", "scored this way",
+        "scoring for", "why scored",
+    ]
+    if any(kw in q_lower for kw in _EXPLAIN_KEYWORDS) and issue_number:
+        return handle_explain_query(issue_number)
+
     # ── Step 1: Guardrail ─────────────────────────────────────────────────────
     try:
         relevance = _chat(_GUARDRAIL_SYSTEM, query).upper()
@@ -411,7 +429,9 @@ def handle_adhoc_query(query: str, issue_number: int = None) -> str:
         "FORMATTING RULES:\n"
         "- Write in a conversational, natural language paragraph format.\n"
         "- DO NOT just dump a rigid list of bullet points like Title/State/Author.\n"
-        "- Weave the facts (what the issue/PR is about, who authored it, its state) naturally into your sentences.\n"
+        "- Weave the facts naturally into your sentences, BUT use the following specific markdown for key details:\n"
+        "  * Format the assignee or author name as inline code using backticks (e.g., `username`). This creates a boxed/colored effect in Slack.\n"
+        "  * Format the status (open, closed, merged) as inline code using backticks and caps (e.g., `[OPEN]` or `[MERGED]`).\n"
         "- Convert ISO timestamps (e.g. 2024-06-02T03:49:11Z) to 'MM/DD/YY at HH:MM UTC' format.\n"
         "- Reference issues as #N (e.g. #66353) and PRs as PR #N.\n"
         "- Include the GitHub link naturally at the end.\n"
@@ -445,6 +465,118 @@ def handle_adhoc_query(query: str, issue_number: int = None) -> str:
 
     print(f"[Adhoc] Response ready ({len(answer)} chars). Tools: {tools_called}")
     return answer
+
+
+# ── Top-N risk query handler ──────────────────────────────────────────────────
+
+def handle_top_risk_query(n: int = 5) -> str:
+    """
+    Return the top-N issues from the last scoring run, sorted by high risk probability.
+    Reads directly from the in-memory cache in slack_orchestrator.
+    """
+    import slack_orchestrator as _orch
+    from config import SLACK_CHANNEL
+
+    cache = _orch.last_scored_cache
+    if not cache:
+        return (
+            "📭 *No scoring data available yet.*\n"
+            "The pipeline hasn't run a scoring cycle since the server started. "
+            "Trigger one with `POST /poll` or wait for the next scheduled run."
+        )
+
+    top = cache[:n]
+    base_url = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
+    channel_id = SLACK_CHANNEL
+
+    lines = [f"📊 *Top {n} Risk Issues from last scoring run:*\n"]
+    for idx, issue in enumerate(top, 1):
+        num       = issue["issue_number"]
+        title     = issue["title"][:70]
+        url       = issue.get("url", "")
+        pred      = issue.get("predicted_class", "unknown")
+        prob_high = issue.get("probabilities", {}).get("high", 0.0)
+        assignee  = "_none — ⚠️ unassigned_" if issue.get("assignee_count", 0) == 0 else f"{issue.get('assignee_count')} assignee(s)"
+        days_open = issue.get("days_open", 0)
+        labels    = ", ".join(issue.get("labels", [])[:3]) or "none"
+
+        # Build explain link pointing at our /explain endpoint
+        explain_url = f"{base_url}/explain?issue={num}&channel={channel_id}"
+
+        emoji = "🔴" if prob_high > 0.4 else "🟠" if prob_high > 0.2 else "🟡"
+        lines.append(
+            f"{idx}. *<{url}|#{num}>* — {title}\n"
+            f"   {emoji} `{pred}` | Score: {prob_high:.0%} | Assigned: {assignee} | "
+            f"Days open: {days_open} | Labels: {labels}\n"
+            f"   <{explain_url}|🔍 Explain why this was scored>"
+        )
+
+    footer = (
+        f"\n_💡 Showing top {n}."
+        + (" Ask for more, e.g. \"give me top 10 risk issues\"." if n <= 5 else "")
+        + "_"
+    )
+    return "\n".join(lines) + footer
+
+
+# ── Explain-score query handler ──────────────────────────────────────────────
+
+def handle_explain_query(issue_number: int) -> str:
+    """
+    Run the Reasoner on a specific issue on demand.
+    Cache hit: use the pre-scored data.
+    Cache miss: fetch live from GitHub, score, then reason.
+    Returns a Reasoner-style explanation (without the HIGH alert header).
+    """
+    import slack_orchestrator as _orch
+    from sentinel import score_issue
+    from reasoner import analyze_issue
+
+    cache = _orch.last_scored_cache
+    issue = next((i for i in cache if i.get("issue_number") == issue_number), None)
+
+    if issue:
+        print(f"[Explain-adhoc] Cache HIT for #{issue_number}")
+    else:
+        print(f"[Explain-adhoc] Cache MISS for #{issue_number} — fetching + scoring live")
+        raw = gh_get_issue(issue_number)
+        if not raw:
+            return f"⚠️ Could not find issue #{issue_number} on GitHub."
+        issue = {
+            "issue_number":       raw["issue_number"],
+            "title":              raw["title"],
+            "body":               raw["body"],
+            "url":                raw["html_url"],
+            "created_at":         raw["created_at"],
+            "labels":             raw["labels"],
+            "days_open":          0,
+            "comment_count":      raw.get("comments", 0),
+            "assignee_count":     1 if raw.get("assignee") != "nobody" else 0,
+            "linked_pr_count":    0,
+            "pr_states":          ["none"],
+            "ci_status":          "none",
+            "max_comment_gap_days": 0.0,
+            "comments_text":      "",
+            "silent_reviewers":   0,
+            "pr_review_feedback": "",
+        }
+        issue = score_issue(issue)
+
+    try:
+        result   = analyze_issue(issue)
+        a        = result["analysis"]
+        prob_h   = issue.get("probabilities", {}).get("high", 0.0)
+        pred     = issue.get("predicted_class", "unknown")
+        url      = issue.get("url", "")
+        return (
+            f"🔍 *Scoring Explanation for #{issue_number}*\n"
+            f"*{issue['title']}*\n\n"
+            f"🤖 *Scorer:* `{pred}` | Confidence: {prob_h:.0%}\n\n"
+            f"📋 *Why it was scored this way:*\n{a['narrative']}\n\n"
+            f"<{url}|View Issue on GitHub>"
+        )
+    except Exception as e:
+        return f"⚠️ Reasoner failed for #{issue_number}: {e}"
 
 
 # ── Standalone test ────────────────────────────────────────────────────────────

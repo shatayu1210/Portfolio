@@ -1,8 +1,11 @@
 import requests
 import time
 from datetime import datetime
-from config import GITHUB_TOKEN, GITHUB_REPO, POLL_INTERVAL_SECONDS
+from config import GITHUB_TOKEN, GITHUB_REPO, POLL_INTERVAL_SECONDS, DEMO_MODE
 from cache import init_cache, is_seen, mark_seen, get_seen_count
+import json
+import random
+import os
 
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
 
@@ -247,15 +250,31 @@ def poll_once() -> list[dict]:
     print(f"Repo: {GITHUB_REPO}")
     print(f"Total issues seen so far: {get_seen_count()}")
 
-    # Fetch from GitHub
-    all_issues = fetch_open_issues()
-    print(f"Fetched {len(all_issues)} open issues (excl. PRs)")
+    if DEMO_MODE:
+        print("[DEMO MODE ENABLED] — Skipping live GitHub API.")
+        demo_file = random.choice(["demo_set_1.json", "demo_set_2.json"])
+        demo_path = os.path.join(os.path.dirname(__file__), demo_file)
+        
+        if os.path.exists(demo_path):
+            print(f"Loading static issues from {demo_file}...")
+            with open(demo_path, "r") as f:
+                all_issues = json.load(f)
+            print(f"Fetched {len(all_issues)} issues from local demo set.")
+        else:
+            print(f"❌ {demo_file} not found! Please run generate_demo_sets.py first.")
+            all_issues = []
+    else:
+        # Fetch from GitHub
+        all_issues = fetch_open_issues()
+        print(f"Fetched {len(all_issues)} open issues (excl. PRs)")
 
     # Return ALL fetched issues without filtering them by the seen cache
     # so they get continuously scored every 5 minutes.
     if all_issues:
-        for issue in all_issues:
+        for issue in all_issues[:10]: # Print top 10 to avoid console spam
             print(f"  → #{issue['issue_number']}: {issue['title'][:70]}")
+        if len(all_issues) > 10:
+            print(f"  ... and {len(all_issues) - 10} more.")
     else:
         print("  No new issues this cycle.")
 
