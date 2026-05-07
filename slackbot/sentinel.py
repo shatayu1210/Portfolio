@@ -145,7 +145,23 @@ def score_issue(issue: dict) -> dict:
             probabilities    = {}
 
     predicted_class = parse_class(generated)
-    is_high = predicted_class == HIGH_CLASS
+    is_high = False
+    
+    if probabilities:
+        prob_high = probabilities.get("high", 0.0)
+        prob_medium = probabilities.get("medium", 0.0)
+        
+        # Smart Routing Logic
+        if prob_high > 0.4:
+            is_high = True
+            predicted_class = "high (prob > 0.4)"
+        elif prob_medium > 0.8:
+            is_high = True
+            predicted_class = "medium (escalated, prob > 0.8)"
+        else:
+            is_high = predicted_class == HIGH_CLASS
+    else:
+        is_high = predicted_class == HIGH_CLASS
 
     return {
         **issue,
