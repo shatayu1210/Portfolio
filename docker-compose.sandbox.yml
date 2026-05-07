@@ -1,0 +1,20 @@
+services:
+  airflow-sandbox:
+    container_name: airflow-sandbox
+    build:
+      context: .
+      dockerfile: sandbox/Dockerfile.persistent
+    volumes:
+      # Mounts your local Airflow repo into the container
+      - ./tree_sitter/airflow:/opt/airflow
+    working_dir: /opt/airflow
+    environment:
+      - PYTHONPATH=/opt/airflow/airflow-core/src
+    # Keeps the container running indefinitely
+    command: tail -f /dev/null
+    networks:
+      - autobot-net
+
+networks:
+  autobot-net:
+    driver: bridge
