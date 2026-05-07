@@ -19,11 +19,15 @@ from config import (
     SCORER_THRESHOLD
 )
 from poller import poll_once
-from sentinel import run_sentinel
-from reasoner import run_reasoner
+from sentinel import run_sentinel, score_issue
+from reasoner import run_reasoner, analyze_issue
 from notifier import run_notifier
-from adhoc import handle_adhoc_query
+from adhoc import handle_adhoc_query, handle_top_risk_query, handle_explain_query
 from generate_demo_sets import generate_sets
+
+# ── In-memory scored issues cache (reset on restart) ─────────────────────────
+# Stores ALL scored issues from the last pipeline run, sorted by high probability desc.
+last_scored_cache: list[dict] = []
 
 # ── Slack client for event handling ──────────────────────────────────────────
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
@@ -67,11 +71,23 @@ def node_poll(state: PipelineState) -> PipelineState:
 
 def node_score(state: PipelineState) -> PipelineState:
     """Node 2 — Sentinel scores each issue."""
+    global last_scored_cache
     print(f"[LangGraph] node_score running on {len(state['raw_issues'])} issues...")
     if not state["raw_issues"]:
         return {**state, "high_issues": []}
     try:
         high_issues = run_sentinel(state["raw_issues"])
+
+        # Rebuild the full scored list (sentinel only returns highs, so we need all issues)
+        # run_sentinel marks is_high_severity on the issues internally, so state["raw_issues"]
+        # now has the scored metadata attached. Sort all by high probability desc.
+        all_scored = state["raw_issues"]  # sentinel mutates in-place
+        last_scored_cache = sorted(
+            all_scored,
+            key=lambda x: x.get("probabilities", {}).get("high", 0.0),
+            reverse=True
+        )
+        print(f"[Cache] Stored {len(last_scored_cache)} scored issues in memory.")
         return {**state, "high_issues": high_issues}
     except Exception as e:
         print(f"[LangGraph] node_score error: {e}")
@@ -275,6 +291,83 @@ async def trigger_generate_demo_sets(background_tasks: BackgroundTasks):
 
     background_tasks.add_task(run_generation)
     return {"status": "demo set generation started in background"}
+
+
+@app.get("/explain")
+async def explain_issue(issue_number: int, channel: str = None, background_tasks: BackgroundTasks = None):
+    """
+    On-demand Scorer + Reasoner for a single issue.
+    Called when a user clicks an 'Explain why' link from the top-risk list.
+    Checks the in-memory cache first; falls back to live GitHub fetch + score if not found.
+    Posts the Reasoner explanation back to the Slack channel.
+    """
+    target_channel = channel or SLACK_CHANNEL
+
+    def run_explain():
+        import slack_orchestrator as _self
+        cached = next(
+            (i for i in _self.last_scored_cache if i.get("issue_number") == issue_number),
+            None
+        )
+
+        if cached:
+            print(f"[Explain] Cache HIT for #{issue_number}")
+            issue = cached
+        else:
+            print(f"[Explain] Cache MISS for #{issue_number} — fetching + scoring live")
+            from adhoc import gh_get_issue
+            raw = gh_get_issue(issue_number)
+            if not raw:
+                slack_client.chat_postMessage(
+                    channel=target_channel,
+                    text=f"⚠️ Could not fetch issue #{issue_number} from GitHub."
+                )
+                return
+            issue = {
+                "issue_number": raw["issue_number"],
+                "title":        raw["title"],
+                "body":         raw["body"],
+                "url":          raw["html_url"],
+                "created_at":   raw["created_at"],
+                "labels":       raw["labels"],
+                "days_open":    raw.get("days_open", 0),
+                "comment_count":    raw.get("comments", 0),
+                "assignee_count":   1 if raw.get("assignee") != "nobody" else 0,
+                "linked_pr_count":  0,
+                "pr_states":        ["none"],
+                "ci_status":        "none",
+                "max_comment_gap_days": 0.0,
+                "comments_text":    "",
+                "silent_reviewers": 0,
+                "pr_review_feedback": "",
+            }
+            issue = score_issue(issue)
+
+        try:
+            result = analyze_issue(issue)
+            a = result["analysis"]
+            prob_high = issue.get("probabilities", {}).get("high", 0.0)
+            pred_class = issue.get("predicted_class", "unknown")
+            confidence = f"{prob_high:.0%}"
+
+            text = (
+                f"🔍 *Scoring Explanation for #{issue_number}*\n"
+                f"*{issue['title']}*\n\n"
+                f"🤖 *Scorer:* `{pred_class}` | Confidence: {confidence}\n\n"
+                f"📋 *Why it was scored this way:*\n{a['narrative']}\n\n"
+                f"<{issue.get('url', '')}|View Issue on GitHub>"
+            )
+            slack_client.chat_postMessage(channel=target_channel, text=text)
+            print(f"[Explain] Posted explanation for #{issue_number} to {target_channel}")
+        except Exception as e:
+            print(f"[Explain] Failed for #{issue_number}: {e}")
+            slack_client.chat_postMessage(
+                channel=target_channel,
+                text=f"⚠️ Failed to generate explanation for #{issue_number}: {e}"
+            )
+
+    background_tasks.add_task(run_explain)
+    return {"status": f"explanation for #{issue_number} triggered", "channel": target_channel}
 
 
 def process_adhoc_query(clean_query: str, issue_number: int | None, channel: str, thread_ts: str):

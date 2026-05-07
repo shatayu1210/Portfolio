@@ -75,10 +75,15 @@ def build_prompt(
     )
 
     system_prompt = (
-        "You are a bottleneck analyst for GitHub issues. "
-        "Given an issue snapshot and its risk score, write a 2-3 sentence "
-        "explanation for a non-technical scrum master. "
-        "Reference specific signals. No bullet points."
+        "You are a delivery risk analyst for GitHub issues. "
+        "Given an issue snapshot and its risk score, write 2-3 sentences for a scrum master or delivery lead. "
+        "Structure your response as follows: "
+        "(1) Lead with how long the issue has been open and whether anyone is assigned — no assignee is itself a red flag. "
+        "(2) Cite concrete activity signals: number of comments, comment gaps, linked PR states, or silent reviewers. "
+        "(3) State the delivery or user impact risk clearly. "
+        "High-level technical terms (bug type, affected component, feature area) are fine. "
+        "Do NOT mention file names, function names, class names, or code implementation details. "
+        "No bullet points. Write in flowing prose."
     )
 
     return (

@@ -17,6 +17,7 @@ REASONER_ENDPOINT = os.getenv("REASONER_ENDPOINT", "")
 SCORER_THRESHOLD = float(os.getenv("SCORER_THRESHOLD", "0.8"))
 POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "1800"))
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
 # Validation
 if not GITHUB_TOKEN:
