@@ -326,14 +326,10 @@ def handle_adhoc_query(query: str, issue_number: int = None) -> str:
     print(f"[Adhoc] Handling query: '{query}' | issue_number={issue_number}")
 
     # ── Intent: Top-N risk query (bypass LLM toolchain) ──────────────────────
-    _TOP_RISK_KEYWORDS = [
-        "top risk", "top risks", "highest risk", "riskiest",
-        "most at risk", "top scored", "highest scored",
-        "top issue", "top issues", "top n",
-    ]
+    import re as _re
     q_lower = query.lower()
-    if any(kw in q_lower for kw in _TOP_RISK_KEYWORDS):
-        import re as _re
+    is_top_query = bool(_re.search(r"top\s*(\d+)?\s*(risk|issue|scored)", q_lower))
+    if is_top_query or any(kw in q_lower for kw in ["riskiest", "highest risk", "most at risk"]):
         n_match = _re.search(r"\b(\d+)\b", query)
         n = int(n_match.group(1)) if n_match else 5
         return handle_top_risk_query(n)
