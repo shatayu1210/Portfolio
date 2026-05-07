@@ -23,6 +23,7 @@ from sentinel import run_sentinel
 from reasoner import run_reasoner
 from notifier import run_notifier
 from adhoc import handle_adhoc_query
+from generate_demo_sets import generate_sets
 
 # ── Slack client for event handling ──────────────────────────────────────────
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
@@ -257,6 +258,23 @@ async def trigger_poll(background_tasks: BackgroundTasks):
 
     background_tasks.add_task(run_cycle)
     return {"status": "poll cycle triggered"}
+
+
+@app.post("/generate_demo_sets")
+async def trigger_generate_demo_sets(background_tasks: BackgroundTasks):
+    """
+    Manually trigger the generation of the 30-issue demo JSON sets.
+    Useful for resetting the demo state before a live presentation.
+    """
+    def run_generation():
+        print("[Manual Generation] Starting demo set generation...")
+        try:
+            generate_sets()
+        except Exception as e:
+            print(f"[Manual Generation] Error: {e}")
+
+    background_tasks.add_task(run_generation)
+    return {"status": "demo set generation started in background"}
 
 
 def process_adhoc_query(clean_query: str, issue_number: int | None, channel: str, thread_ts: str):
