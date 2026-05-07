@@ -189,6 +189,9 @@ def polling_loop():
     print(f"Polling loop started — interval: {POLL_INTERVAL_SECONDS}s")
 
     while True:
+        print(f"\nSleeping {POLL_INTERVAL_SECONDS}s until next cycle...")
+        time.sleep(POLL_INTERVAL_SECONDS)
+        
         try:
             print(f"\n{'='*60}")
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running pipeline cycle...")
@@ -216,9 +219,6 @@ def polling_loop():
 
         except Exception as e:
             print(f"[Polling loop error]: {e}")
-
-        print(f"\nSleeping {POLL_INTERVAL_SECONDS}s until next cycle...")
-        time.sleep(POLL_INTERVAL_SECONDS)
 
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
