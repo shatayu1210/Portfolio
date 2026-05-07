@@ -83,14 +83,21 @@ def generate_sets():
     
     if len(high_issues) < 8:
         print("⚠️ Not enough HIGH severity issues found for 2 sets. Need at least 8.")
-        print("Falling back to taking the top N by confidence score...")
-        scored_issues.sort(key=lambda x: x.get("confidence_score", 0.0), reverse=True)
+        print("Falling back to taking the top N by High Probability...")
+        
+        # Sort specifically by the probability of the 'high' class
+        scored_issues.sort(key=lambda x: x.get("probabilities", {}).get("high", 0.0), reverse=True)
+        
         high_issues = scored_issues[:8]
         low_medium_issues = scored_issues[8:]
+        
+        # Explicitly force the flags so there's no leakage
         for h in high_issues:
-            h["is_high_severity"] = True # Force them to high for demo purposes
-            h["predicted_class"] = "high"
-            
+            h["is_high_severity"] = True
+            if "forced" not in h.get("predicted_class", ""):
+                h["predicted_class"] = "high (forced for demo)"
+        for l in low_medium_issues:
+            l["is_high_severity"] = False
     # Shuffle to randomize
     random.shuffle(high_issues)
     random.shuffle(low_medium_issues)
