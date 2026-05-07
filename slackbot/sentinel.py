@@ -173,11 +173,15 @@ def score_issue(issue: dict) -> dict:
     }
 
 
-def run_sentinel(issues: list[dict]) -> list[dict]:
+def run_sentinel(issues: list[dict], on_high_found=None) -> list[dict]:
     """
     Score all new issues from poller.
     Marks ALL issues as seen (so we don't re-score them).
     Returns only HIGH severity issues for Reasoner.
+
+    on_high_found: optional callback(issue) called immediately when a HIGH
+                   issue is found, BEFORE continuing to the next issue.
+                   This allows reason+notify to fire while scoring is paused.
     """
     if not issues:
         print("Sentinel: no issues to score.")
@@ -208,7 +212,12 @@ def run_sentinel(issues: list[dict]) -> list[dict]:
 
             if scored["is_high_severity"]:
                 high_severity.append(scored)
-                print(f"    ✅ HIGH severity — forwarding to Reasoner")
+                print(f"    ✅ HIGH severity — firing Reasoner immediately...")
+                if on_high_found:
+                    try:
+                        on_high_found(scored)
+                    except Exception as cb_err:
+                        print(f"    ⚠️  on_high_found callback failed: {cb_err}")
             else:
                 print(f"    ⏭️  Skipping ({cls}) — below threshold")
 

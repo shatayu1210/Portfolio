@@ -21,13 +21,16 @@ from config import (
 from poller import poll_once
 from sentinel import run_sentinel, score_issue
 from reasoner import run_reasoner, analyze_issue
-from notifier import run_notifier
+from notifier import run_notifier, send_slack_message
 from adhoc import handle_adhoc_query, handle_top_risk_query, handle_explain_query
 from generate_demo_sets import generate_sets
 
 # ── In-memory scored issues cache (reset on restart) ─────────────────────────
 # Stores ALL scored issues from the last pipeline run, sorted by high probability desc.
 last_scored_cache: list[dict] = []
+
+# Prevents concurrent pipeline runs from interleaving their print logs.
+_pipeline_lock = threading.Lock()
 
 # ── Slack client for event handling ──────────────────────────────────────────
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
@@ -70,17 +73,38 @@ def node_poll(state: PipelineState) -> PipelineState:
 
 
 def node_score(state: PipelineState) -> PipelineState:
-    """Node 2 — Sentinel scores each issue."""
+    """Node 2 — Sentinel scores each issue and fires Reason+Notify immediately for each HIGH."""
     global last_scored_cache
     print(f"[LangGraph] node_score running on {len(state['raw_issues'])} issues...")
     if not state["raw_issues"]:
-        return {**state, "high_issues": []}
-    try:
-        high_issues = run_sentinel(state["raw_issues"])
+        return {**state, "high_issues": [], "analyzed_issues": [], "sent_count": 0, "failed_count": 0}
 
-        # Rebuild the full scored list (sentinel only returns highs, so we need all issues)
-        # run_sentinel marks is_high_severity on the issues internally, so state["raw_issues"]
-        # now has the scored metadata attached. Sort all by high probability desc.
+    sent_count   = 0
+    failed_count = 0
+    analyzed     = []
+
+    def on_high_found(scored_issue: dict):
+        nonlocal sent_count, failed_count
+        num = scored_issue["issue_number"]
+        print(f"    [Immediate] Reasoning #{num}...")
+        try:
+            result = analyze_issue(scored_issue)
+            analyzed.append(result)
+            print(f"    [Immediate] Sending Slack notification for #{num}...")
+            success = send_slack_message(result)
+            if success:
+                print(f"    [Immediate] ✅ Sent #{num} to Slack")
+                sent_count += 1
+            else:
+                print(f"    [Immediate] ❌ Slack send failed for #{num}")
+                failed_count += 1
+        except Exception as e:
+            print(f"    [Immediate] ❌ Reason/Notify failed for #{num}: {e}")
+            failed_count += 1
+
+    try:
+        high_issues = run_sentinel(state["raw_issues"], on_high_found=on_high_found)
+
         all_scored = state["raw_issues"]  # sentinel mutates in-place
         last_scored_cache = sorted(
             all_scored,
@@ -88,10 +112,16 @@ def node_score(state: PipelineState) -> PipelineState:
             reverse=True
         )
         print(f"[Cache] Stored {len(last_scored_cache)} scored issues in memory.")
-        return {**state, "high_issues": high_issues}
+        return {
+            **state,
+            "high_issues":     high_issues,
+            "analyzed_issues": analyzed,
+            "sent_count":      sent_count,
+            "failed_count":    failed_count,
+        }
     except Exception as e:
         print(f"[LangGraph] node_score error: {e}")
-        return {**state, "high_issues": [], "error": str(e)}
+        return {**state, "high_issues": [], "analyzed_issues": [], "sent_count": 0, "failed_count": 0, "error": str(e)}
 
 
 def node_threshold_check(state: PipelineState) -> str:
@@ -193,29 +223,30 @@ def polling_loop():
         time.sleep(POLL_INTERVAL_SECONDS)
         
         try:
-            print(f"\n{'='*60}")
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running pipeline cycle...")
+            with _pipeline_lock:
+                print(f"\n{'='*60}")
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Running pipeline cycle...")
 
-            initial_state: PipelineState = {
-                "raw_issues":      [],
-                "high_issues":     [],
-                "analyzed_issues": [],
-                "sent_count":      0,
-                "failed_count":    0,
-                "cycle_start":     datetime.now().isoformat(),
-                "error":           None
-            }
+                initial_state: PipelineState = {
+                    "raw_issues":      [],
+                    "high_issues":     [],
+                    "analyzed_issues": [],
+                    "sent_count":      0,
+                    "failed_count":    0,
+                    "cycle_start":     datetime.now().isoformat(),
+                    "error":           None
+                }
 
-            final_state = pipeline.invoke(initial_state)
+                final_state = pipeline.invoke(initial_state)
 
-            print(f"\n[Cycle Summary]")
-            print(f"  Raw issues:    {len(final_state['raw_issues'])}")
-            print(f"  HIGH severity: {len(final_state['high_issues'])}")
-            print(f"  Analyzed:      {len(final_state['analyzed_issues'])}")
-            print(f"  Slack sent:    {final_state['sent_count']}")
-            print(f"  Failed:        {final_state['failed_count']}")
-            if final_state.get("error"):
-                print(f"  Error:         {final_state['error']}")
+                print(f"\n[Cycle Summary]")
+                print(f"  Raw issues:    {len(final_state['raw_issues'])}")
+                print(f"  HIGH severity: {len(final_state['high_issues'])}")
+                print(f"  Analyzed:      {len(final_state['analyzed_issues'])}")
+                print(f"  Slack sent:    {final_state['sent_count']}")
+                print(f"  Failed:        {final_state['failed_count']}")
+                if final_state.get("error"):
+                    print(f"  Error:         {final_state['error']}")
 
         except Exception as e:
             print(f"[Polling loop error]: {e}")
@@ -257,20 +288,27 @@ async def health():
 async def trigger_poll(background_tasks: BackgroundTasks):
     """
     Manually trigger one poll cycle.
-    Useful for testing without waiting for the interval.
+    Returns 409 if a cycle is already running.
     """
+    if _pipeline_lock.locked():
+        return JSONResponse(
+            status_code=409,
+            content={"status": "busy", "detail": "A pipeline cycle is already running. Try again shortly."}
+        )
+
     def run_cycle():
-        initial_state: PipelineState = {
-            "raw_issues":      [],
-            "high_issues":     [],
-            "analyzed_issues": [],
-            "sent_count":      0,
-            "failed_count":    0,
-            "cycle_start":     datetime.now().isoformat(),
-            "error":           None
-        }
-        final_state = pipeline.invoke(initial_state)
-        print(f"[Manual poll] sent={final_state['sent_count']} failed={final_state['failed_count']}")
+        with _pipeline_lock:
+            initial_state: PipelineState = {
+                "raw_issues":      [],
+                "high_issues":     [],
+                "analyzed_issues": [],
+                "sent_count":      0,
+                "failed_count":    0,
+                "cycle_start":     datetime.now().isoformat(),
+                "error":           None
+            }
+            final_state = pipeline.invoke(initial_state)
+            print(f"[Manual poll] sent={final_state['sent_count']} failed={final_state['failed_count']}")
 
     background_tasks.add_task(run_cycle)
     return {"status": "poll cycle triggered"}
