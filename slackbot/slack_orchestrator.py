@@ -20,10 +20,11 @@ from config import (
 )
 from poller import poll_once
 from sentinel import run_sentinel, score_issue
-from reasoner import run_reasoner, analyze_issue
+from reasoner import run_reasoner, analyze_issue, build_prompt
 from notifier import run_notifier, send_slack_message
 from adhoc import handle_adhoc_query, handle_top_risk_query, handle_explain_query
 from generate_demo_sets import generate_sets
+from rlhf.feedback_store import push_feedback
 
 # ── In-memory scored issues cache (reset on restart) ─────────────────────────
 # Stores ALL scored issues from the last pipeline run, sorted by high probability desc.
@@ -463,6 +464,100 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
         # Run the heavy LLM processing in the background so we can instantly return 200 to Slack
         background_tasks.add_task(process_adhoc_query, clean_query, issue_number, channel, thread_ts)
 
+    return JSONResponse({"status": "ok"})
+
+
+@app.post("/slack/actions")
+async def slack_actions(request: Request, background_tasks: BackgroundTasks):
+    """
+    Handles Slack interactive component actions (button clicks).
+    Receives feedback_positive_<N> or feedback_negative_<N> button actions
+    from the ✅ Helpful / 👎 Not Helpful buttons on notifications.
+    Writes negative feedback to HF Dataset for RLHF/DPO training.
+    Must return 200 within 3 seconds — heavy work goes to background task.
+    """
+    import json as _json
+    import urllib.parse
+
+    # Slack sends actions as application/x-www-form-urlencoded with a 'payload' field
+    body_bytes = await request.body()
+    body_str   = body_bytes.decode("utf-8")
+    parsed     = urllib.parse.parse_qs(body_str)
+    payload    = _json.loads(parsed.get("payload", ["{}"])[0])
+
+    actions = payload.get("actions", [])
+    if not actions:
+        return JSONResponse({"status": "no actions"})
+
+    action    = actions[0]
+    action_id = action.get("action_id", "")
+    user      = payload.get("user", {}).get("name", "unknown")
+
+    print(f"[Feedback] Action: {action_id} from @{user}")
+
+    def handle_feedback():
+        try:
+            # Parse: feedback_positive_66476 or feedback_negative_66476
+            parts        = action_id.split("_")
+            feedback_type = parts[1]   # "positive" or "negative"
+            issue_number  = int(parts[2])
+
+            # Look up the issue in the last scored cache to get prompt + response
+            cached = next((i for i in last_scored_cache if i["issue_number"] == issue_number), None)
+
+            if feedback_type == "negative":
+                if cached:
+                    # Reconstruct the prompt that was sent to the Reasoner
+                    prompt = build_prompt(
+                        title                = cached["title"],
+                        body                 = cached.get("body", ""),
+                        labels               = cached.get("labels", []),
+                        days_open            = cached.get("days_open", 0),
+                        assignee_count       = cached.get("assignee_count", 0),
+                        comment_count        = cached.get("comment_count", 0),
+                        linked_pr_count      = cached.get("linked_pr_count", 0),
+                        pr_states            = cached.get("pr_states", ["none"]),
+                        ci_status            = cached.get("ci_status", "none"),
+                        max_comment_gap_days = cached.get("max_comment_gap_days", 0.0),
+                        comments_text        = cached.get("comments_text", ""),
+                        silent_reviewers     = cached.get("silent_reviewers", 0),
+                        pr_review_feedback   = cached.get("pr_review_feedback", ""),
+                        risk_score           = cached.get("confidence_score"),
+                        risk_band            = cached.get("predicted_class", "high"),
+                    )
+                    bad_response = cached.get("raw_reasoning", "")
+                    issue_title  = cached.get("title", f"Issue #{issue_number}")
+                else:
+                    prompt       = f"Issue #{issue_number} (prompt not in cache)"
+                    bad_response = "Unknown — issue not in cache"
+                    issue_title  = f"Issue #{issue_number}"
+
+                ok = push_feedback(
+                    issue_number  = issue_number,
+                    issue_title   = issue_title,
+                    prompt        = prompt,
+                    bad_response  = bad_response,
+                    feedback_type = "negative",
+                )
+                status_str = "✅ saved to training dataset" if ok else "⚠️ save failed"
+                print(f"[Feedback] 👎 #{issue_number} — {status_str}")
+
+            else:
+                # Positive feedback — log only, no training data needed
+                push_feedback(
+                    issue_number  = issue_number,
+                    issue_title   = cached.get("title", f"Issue #{issue_number}") if cached else f"Issue #{issue_number}",
+                    prompt        = "",
+                    bad_response  = "",
+                    feedback_type = "positive",
+                )
+                print(f"[Feedback] ✅ #{issue_number} marked helpful by @{user}")
+
+        except Exception as e:
+            print(f"[Feedback] Error handling action '{action_id}': {e}")
+
+    background_tasks.add_task(handle_feedback)
+    # Must return 200 immediately — Slack will show a loading spinner otherwise
     return JSONResponse({"status": "ok"})
 
 
