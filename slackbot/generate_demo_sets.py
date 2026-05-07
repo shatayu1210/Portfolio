@@ -61,7 +61,7 @@ def fetch_batch_for_demo(pages=5) -> list[dict]:
     return issues
 
 def generate_sets():
-    raw_issues = fetch_batch_for_demo(pages=5)  # Fetch ~150 issues (minus PRs)
+    raw_issues = fetch_batch_for_demo(pages=12)  # Fetch ~360 items to get ~80 pure issues
     print(f"Total pure issues fetched: {len(raw_issues)}")
     
     print("Scoring all issues via Sentinel...")
@@ -110,8 +110,18 @@ def generate_sets():
         json.dump(set_2, f, indent=2)
         
     print("\n✅ Successfully generated demo_set_1.json and demo_set_2.json!")
-    print(f"Set 1 Highs: {[i['issue_number'] for i in set_1 if i['is_high_severity']]}")
-    print(f"Set 2 Highs: {[i['issue_number'] for i in set_2 if i['is_high_severity']]}")
+    
+    def print_stats(set_num, s):
+        high_count = len([i for i in s if i['is_high_severity']])
+        low_med_count = len(s) - high_count
+        high_issues = [f"#{i['issue_number']} ({i.get('predicted_class', 'high')})" for i in s if i['is_high_severity']]
+        print(f"\n📊 Set {set_num} Stats (Total: {len(s)} issues):")
+        print(f"  - LOW/MEDIUM (Filtered out): {low_med_count}")
+        print(f"  - HIGH (Sent to Reasoner):   {high_count}")
+        print(f"  - HIGH Issue Numbers:        {', '.join(high_issues)}")
+
+    print_stats(1, set_1)
+    print_stats(2, set_2)
 
 if __name__ == "__main__":
     generate_sets()
