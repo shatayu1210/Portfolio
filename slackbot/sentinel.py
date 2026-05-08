@@ -145,7 +145,23 @@ def score_issue(issue: dict) -> dict:
             probabilities    = {}
 
     predicted_class = parse_class(generated)
-    is_high = predicted_class == HIGH_CLASS
+    is_high = False
+    
+    if probabilities:
+        prob_high = probabilities.get("high", 0.0)
+        prob_medium = probabilities.get("medium", 0.0)
+        
+        # Smart Routing Logic
+        if prob_high > 0.4:
+            is_high = True
+            predicted_class = "high (prob > 0.4)"
+        elif prob_medium > 0.8:
+            is_high = True
+            predicted_class = "medium (escalated, prob > 0.8)"
+        else:
+            is_high = predicted_class == HIGH_CLASS
+    else:
+        is_high = predicted_class == HIGH_CLASS
 
     return {
         **issue,
@@ -157,11 +173,15 @@ def score_issue(issue: dict) -> dict:
     }
 
 
-def run_sentinel(issues: list[dict]) -> list[dict]:
+def run_sentinel(issues: list[dict], on_high_found=None) -> list[dict]:
     """
     Score all new issues from poller.
     Marks ALL issues as seen (so we don't re-score them).
     Returns only HIGH severity issues for Reasoner.
+
+    on_high_found: optional callback(issue) called immediately when a HIGH
+                   issue is found, BEFORE continuing to the next issue.
+                   This allows reason+notify to fire while scoring is paused.
     """
     if not issues:
         print("Sentinel: no issues to score.")
@@ -180,6 +200,7 @@ def run_sentinel(issues: list[dict]) -> list[dict]:
 
         try:
             scored = score_issue(issue)
+            issues[i].update(scored)
             cls    = scored["predicted_class"]
             conf   = scored["confidence_score"]
             raw    = scored["raw_output"][:30]
@@ -192,7 +213,12 @@ def run_sentinel(issues: list[dict]) -> list[dict]:
 
             if scored["is_high_severity"]:
                 high_severity.append(scored)
-                print(f"    ✅ HIGH severity — forwarding to Reasoner")
+                print(f"    ✅ HIGH severity — firing Reasoner immediately...")
+                if on_high_found:
+                    try:
+                        on_high_found(scored)
+                    except Exception as cb_err:
+                        print(f"    ⚠️  on_high_found callback failed: {cb_err}")
             else:
                 print(f"    ⏭️  Skipping ({cls}) — below threshold")
 

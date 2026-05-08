@@ -12,6 +12,8 @@ HEADERS = {
 def format_slack_message(issue: dict) -> dict:
     """
     Format a single analyzed issue into a Slack Block Kit message.
+    Includes ✅ Helpful / 👎 Not Helpful feedback buttons in the footer.
+    Button action_ids embed the issue_number so /slack/actions can route them.
     """
     analysis    = issue["analysis"]
     issue_num   = issue["issue_number"]
@@ -76,6 +78,26 @@ def format_slack_message(issue: dict) -> dict:
             },
             {
                 "type": "divider"
+            },
+            # ── Feedback buttons ──────────────────────────────────────────────
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "✅ Helpful", "emoji": True},
+                        "style": "primary",
+                        "action_id": f"feedback_positive_{issue_num}",
+                        "value": f"{issue_num}",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "👎 Not Helpful", "emoji": True},
+                        "style": "danger",
+                        "action_id": f"feedback_negative_{issue_num}",
+                        "value": f"{issue_num}",
+                    },
+                ]
             }
         ]
     }

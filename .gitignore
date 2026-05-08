@@ -255,3 +255,13 @@ etl/training_data/*.jsonl
 seen_issues.db
 scratch/
 .langgraph_api/
+
+demo_set_*.json
+
+# RLHF — one-time data generation scripts and outputs (never commit to git)
+slackbot/rlhf/generate_synthetic_feedback.py
+slackbot/rlhf/generate_gold_set.py
+slackbot/rlhf/gold_set.json
+
+# RunPod Dockerfile for DPO training job
+slackbot/rlhf/Dockerfile.runpod

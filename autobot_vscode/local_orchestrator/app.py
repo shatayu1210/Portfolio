@@ -27,6 +27,11 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from langgraph_workflow import planner_graph, patcher_graph, function_registry
+import ssl
+
+# Workaround for macOS Python SSL certificate issues with urllib
+ssl._create_default_https_context = ssl._create_unverified_context
 
 load_dotenv()
 
@@ -85,34 +90,164 @@ SKIP_DIR_NAMES = {
 _google_llm = None
 _vertex_initialized = False
 
+# ── TGI call metadata sink ────────────────────────────────────────────────────
+# Written by hf_tgi_chat after every call so that workflow nodes can inspect
+# finish_reason, token counts, and truncation flags without changing the
+# chat_fn signature (which must stay (str, str) -> str).
+_tgi_call_metadata: dict[str, Any] = {}
 
-def hf_tgi_chat(adapter_id: str) -> "Callable[[str, str], str]":
+# Rough estimate: 1 token ≈ 3.5 chars for code/JSON payloads
+_CHARS_PER_TOKEN: float = 3.5
+# Known model context window (input + output tokens)
+# Adjust if your TGI deployment uses a different --max-total-tokens
+_MODEL_CONTEXT_TOKENS: int = int(os.environ.get("HF_TGI_MAX_CONTEXT_TOKENS", "8192"))
+# max_new_tokens for diff generation (diffs can be longer than a planning response)
+_PATCHER_MAX_NEW_TOKENS: int = int(os.environ.get("HF_TGI_PATCHER_MAX_NEW_TOKENS", "2048"))
+
+
+def hf_tgi_chat(adapter_id: str, max_new_tokens: int = 1024) -> "Callable[[str, str], str]":
+    """General-purpose HF TGI chat function (planner, critic, etc.)."""
+    return _hf_tgi_call(adapter_id, max_new_tokens=max_new_tokens, role="general")
+
+
+def hf_tgi_patcher_chat(adapter_id: str) -> "Callable[[str, str], str]":
+    """Patcher-specific variant with higher max_new_tokens for long diffs."""
+    return _hf_tgi_call(adapter_id, max_new_tokens=_PATCHER_MAX_NEW_TOKENS, role="patcher")
+
+
+def _hf_tgi_call(adapter_id: str, max_new_tokens: int, role: str) -> "Callable[[str, str], str]":
     """
-    Returns a chat_fn that calls the HF TGI endpoint with the specified LoRA adapter.
-    Usage: chat_fn = hf_tgi_chat(HF_PLANNER_ADAPTER)
+    Returns a chat_fn that calls the HF TGI /generate endpoint.
+    Writes diagnostics to _tgi_call_metadata after every call:
+      input_chars, estimated_input_tokens, output_chars, finish_reason,
+      output_truncated (bool), input_near_limit (bool), role
     """
-    import urllib.request as _req
+    import requests
     def _call(system: str, user: str) -> str:
+        global _tgi_call_metadata
         prompt = f"<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n"
-        body = json.dumps({
+
+        input_chars = len(prompt)
+        estimated_input_tokens = int(input_chars / _CHARS_PER_TOKEN)
+        input_near_limit = estimated_input_tokens > int(_MODEL_CONTEXT_TOKENS * 0.85)
+
+        # Pre-call warning: input may be too large
+        if input_near_limit:
+            print(
+                f"[WARNING][TGI/{role}] Large input detected: ~{estimated_input_tokens} tokens "
+                f"(limit ~{_MODEL_CONTEXT_TOKENS}). Input may be truncated by the server."
+            )
+
+        payload = {
             "inputs": prompt,
-            "parameters": {"max_new_tokens": 1024, "temperature": 0.1},
-            # TGI LoRA: pass adapter_id as model parameter
-            **(  {"model": adapter_id} if adapter_id else {}  ),
-        }).encode()
-        req = _req.Request(
-            f"{HF_TGI_ENDPOINT}/generate",
-            data=body,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {HF_TGI_TOKEN}",
+            "parameters": {
+                "max_new_tokens": max_new_tokens,
+                "temperature": 0.1,
+                "details": True,          # Ask TGI for finish_reason + token counts
             },
-            method="POST",
-        )
-        with _req.urlopen(req, timeout=120) as resp:
-            result = json.loads(resp.read())
-        return result.get("generated_text", "")
+            **(  {"model": adapter_id} if adapter_id else {}  ),
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {HF_TGI_TOKEN}",
+        }
+
+        try:
+            resp = requests.post(
+                f"{HF_TGI_ENDPOINT}/generate",
+                json=payload,
+                headers=headers,
+                timeout=180,
+            )
+        except requests.exceptions.Timeout:
+            _tgi_call_metadata = {
+                "role": role, "input_chars": input_chars,
+                "estimated_input_tokens": estimated_input_tokens,
+                "error": "request_timeout",
+            }
+            raise Exception("TGI request timed out after 180s")
+
+        # HTTP 400 almost always means the input exceeded the model's context
+        if resp.status_code == 400:
+            err_body = resp.text[:500]
+            is_input_too_large = any(kw in err_body.lower() for kw in (
+                "input_too_large", "input length", "max_input_length",
+                "exceeds model max length", "sequence length",
+            ))
+            _tgi_call_metadata = {
+                "role": role,
+                "input_chars": input_chars,
+                "estimated_input_tokens": estimated_input_tokens,
+                "error": "input_too_large" if is_input_too_large else "http_400",
+                "input_too_large": is_input_too_large,
+                "server_error": err_body,
+            }
+            if is_input_too_large:
+                print(
+                    f"[ERROR][TGI/{role}] INPUT TOO LARGE — server rejected request. "
+                    f"Estimated ~{estimated_input_tokens} tokens "
+                    f"(limit ~{_MODEL_CONTEXT_TOKENS}). "
+                    f"The patcher_input must be pruned. Server: {err_body[:200]}"
+                )
+            raise Exception(f"HTTP {resp.status_code}: {resp.text}")
+
+        if not resp.ok:
+            _tgi_call_metadata = {
+                "role": role, "input_chars": input_chars,
+                "estimated_input_tokens": estimated_input_tokens,
+                "error": f"http_{resp.status_code}",
+            }
+            raise Exception(f"HTTP {resp.status_code}: {resp.text}")
+
+        result = resp.json()
+        generated_text = result.get("generated_text", "")
+
+        # Extract TGI generation details
+        details = result.get("details", {})
+        finish_reason = details.get("finish_reason", "unknown")   # "eos_token"|"length"|"stop_sequence"
+        tgi_input_tokens  = details.get("prefill_tokens", estimated_input_tokens)
+        tgi_output_tokens = details.get("generated_tokens", int(len(generated_text) / _CHARS_PER_TOKEN))
+
+        output_truncated = (finish_reason == "length")
+        if output_truncated:
+            print(
+                f"[WARNING][TGI/{role}] OUTPUT TRUNCATED — generation hit max_new_tokens={max_new_tokens}. "
+                f"The diff is incomplete! Output chars: {len(generated_text)}. "
+                f"Increase HF_TGI_PATCHER_MAX_NEW_TOKENS in .env."
+            )
+
+        _tgi_call_metadata = {
+            "role": role,
+            "input_chars": input_chars,
+            "output_chars": len(generated_text),
+            "estimated_input_tokens": estimated_input_tokens,
+            "tgi_input_tokens": tgi_input_tokens,
+            "tgi_output_tokens": tgi_output_tokens,
+            "max_new_tokens": max_new_tokens,
+            "model_context_tokens": _MODEL_CONTEXT_TOKENS,
+            "finish_reason": finish_reason,
+            "output_truncated": output_truncated,
+            "input_near_limit": input_near_limit,
+            "adapter_id": adapter_id or "(base)",
+        }
+
+        return generated_text
     return _call
+
+
+def get_tgi_last_call_metadata() -> dict:
+    """Return the metadata dict written by the most recent TGI call."""
+    return dict(_tgi_call_metadata)
+
+
+def _legacy_hf_tgi_chat(adapter_id: str) -> "Callable[[str, str], str]":
+    """Kept for reference only — superseded by hf_tgi_chat."""
+    return hf_tgi_chat(adapter_id)
+
+
+
+
+
 
 
 def get_google_ai_llm():
@@ -494,6 +629,17 @@ def llm_patch_and_critic(
             return "ERROR: missing '+++ ' header"
         if not any(ln.startswith("@@ ") for ln in lines):
             return "ERROR: missing '@@ ' hunk header"
+        # Reject diffs whose only changes are blank-line insertions/deletions —
+        # this is the model generating a structurally valid but semantically empty diff.
+        added_lines   = [ln[1:] for ln in diff_text.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+        removed_lines = [ln[1:] for ln in diff_text.splitlines() if ln.startswith("-") and not ln.startswith("---")]
+        substantive_adds    = [ln for ln in added_lines   if ln.strip()]
+        substantive_removes = [ln for ln in removed_lines if ln.strip()]
+        if not substantive_adds and not substantive_removes:
+            return (
+                "ERROR: diff only adds/removes blank lines — no real code changes detected. "
+                "You must output a diff that adds or modifies actual code (not just whitespace)."
+            )
         return "VALID"
 
     def _extract_diff_payload(raw: str) -> str:
@@ -1302,45 +1448,75 @@ async def orchestrate(request: Request):
         if chat_fn is None:
             return stub_plan(n_int, repo)
 
-        # Run planner through the orchestrator refinement loop
+        # Run planner through the LangGraph pipeline
         try:
-            issue_obj = OrcIssue(number=n_int, title=title, body=body)
             repo_ctx = build_repo_context(repo)
-            graphrag_candidates = get_candidate_files(n_int, top_k=6) if _neo4j_check() else []
+            if n_int not in function_registry:
+                function_registry[n_int] = {}
+            function_registry[n_int]["chat_fn"] = chat_fn
 
-            plan, trace = run_planner_with_refinement(
-                chat_fn=chat_fn,
-                issue=issue_obj,
-                repo_path=repo,
-                repo_context=repo_ctx,
-                ts_index=_ts_index,
-                graphrag_candidates=graphrag_candidates,
-                backend=backend_label,
-            )
-            orc_log_trace(trace)
+            initial_state = {
+                "issue_number": n_int,
+                "title": title,
+                "body": body,
+                "repo_path": repo,
+                "repo_context": repo_ctx,
+                "ts_index": _ts_index,
+                "backend_label": backend_label
+            }
+            
+            config = {"configurable": {"thread_id": str(n_int)}}
+            
+            # Stream the graph to log every single pass/node execution
+            final_state = initial_state.copy()
+            graph_log = []
+            for event in planner_graph.stream(initial_state, config, stream_mode="updates"):
+                graph_log.append(event)
+                for node_name, node_state in event.items():
+                    final_state.update(node_state)
+            
+            # Dump the stream log
+            from datetime import datetime
+            ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+            os.makedirs("logs", exist_ok=True)
+            with open(os.path.join("logs", f"langgraph_planner_{n_int}_{ts}.json"), "w") as f:
+                json.dump(graph_log, f, default=str, indent=2)
+            
+            if final_state.get("status") == "failed":
+                return JSONResponse({"error": final_state.get("error", "Unknown LangGraph error")}, status_code=502)
+                
+            plan = final_state.get("plan", {})
+            trace = final_state.get("trace", {})
+            
+            if trace:
+                from planner_orchestrator import OrchestratorTrace
+                tr = OrchestratorTrace(
+                    issue_number=n_int,
+                    backend=backend_label,
+                    iterations=trace.get("iterations", 0),
+                    final_confidence=trace.get("final_confidence", 0.0),
+                    triggers_detected=trace.get("triggers_detected", []),
+                    research_steps_used=trace.get("research_steps_used", 0)
+                )
+                orc_log_trace(tr)
 
             return {
                 "issue_number": n_int,
                 "repo_path": repo,
                 "plan": {
-                    "summary": plan.summary,
-                    "files": plan.files,
-                    "steps": plan.steps,
+                    "summary": plan.get("summary"),
+                    "files": plan.get("files"),
+                    "steps": plan.get("steps"),
                 },
-                "code_spans": plan.code_spans,
-                "note": f"planner via {backend_label} (orchestrator: {trace.iterations} refinement passes, confidence={trace.final_confidence})",
-                "orchestrator_trace": {
-                    "iterations": trace.iterations,
-                    "final_confidence": trace.final_confidence,
-                    "triggers_detected": trace.triggers_detected,
-                    "research_steps_used": trace.research_steps_used,
-                },
+                "code_spans": plan.get("code_spans"),
+                "note": f"planner via LangGraph/{backend_label} (orchestrator: {trace.get('iterations', 0)} refinement passes, confidence={trace.get('final_confidence', 0.0)})",
+                "orchestrator_trace": trace,
             }
         except Exception as e:
-            return JSONResponse({"error": f"planner orchestrator failed: {e}"}, status_code=502)
+            return JSONResponse({"error": f"planner LangGraph failed: {e}"}, status_code=502)
 
     if command == "approve_plan":
-        """User approved the planner output. Assemble full patcher context pack."""
+        """User approved the planner output. Run the full Patcher → Critic → Sandbox pipeline."""
         approved_raw = data.get("plan", {})
         n = data.get("issue_number")
         repo = str(data.get("repo_path") or "").strip()
@@ -1352,87 +1528,216 @@ async def orchestrate(request: Request):
             return JSONResponse({"error": f"repo_path required: {repo}"}, status_code=400)
 
         title, body = _issue_title_body(n_int)
-        issue_obj = OrcIssue(number=n_int, title=title, body=body)
-        plan = OrcPlan.from_raw(approved_raw)
 
-        patcher_input = assemble_patcher_input(
-            plan=plan,
-            issue=issue_obj,
-            repo_path=repo,
-            ts_index=_ts_index,
-        )
+        # Determine patcher_fn — uses patcher-specific max_new_tokens for long diffs
+        patcher_fn = None
+        if use_hf_tgi and HF_PATCHER_ADAPTER:
+            patcher_fn = hf_tgi_patcher_chat(HF_PATCHER_ADAPTER)
+        elif use_google_ai:
+            patcher_fn = google_ai_chat
+        elif use_vertex:
+            patcher_fn = vertex_chat
+        elif use_ollama:
+            patcher_fn = ollama_chat
 
-        if AUTOBOT_STOP_AT == "planner":
-            return {
+        if patcher_fn is None:
+            return JSONResponse({"error": "No LLM configured for Patcher"}, status_code=500)
+
+        # Determine critic_fn — use dedicated adapter if set, else share patcher adapter
+        critic_fn = None
+        if use_hf_tgi and HF_CRITIC_ADAPTER:
+            critic_fn = hf_tgi_chat(HF_CRITIC_ADAPTER)
+        else:
+            critic_fn = patcher_fn
+
+        config = {"configurable": {"thread_id": str(n_int)}}
+        try:
+            # Register callables in global registry (avoids msgpack serialization issues)
+            if n_int not in function_registry:
+                function_registry[n_int] = {}
+            function_registry[n_int]["patcher_fn"] = patcher_fn
+            function_registry[n_int]["critic_fn"] = critic_fn
+
+            # Build full initial state for the patcher to run in isolation
+            initial_state = {
                 "issue_number": n_int,
-                "status": "stopped_at_planner",
-                "patcher_input": patcher_input,
-                "note": "AUTOBOT_STOP_AT=planner. Stopped before calling patcher.",
+                "title": title,
+                "body": body,
+                "repo_path": repo,
+                "ts_index": _ts_index,
+                "backend_label": f"hf_tgi:{HF_PATCHER_ADAPTER}" if use_hf_tgi else AUTOBOT_MODE,
+                "plan": approved_raw,
+                "iterations": 0,
+                "debate_rounds": 0,
+                "patcher_history": [],
+                "critic_verdict": None,
+                "critic_feedback": None,
+                "sandbox_error_class": None,
             }
 
-        # If HF TGI patcher adapter is configured, call it now;
-        # otherwise return the assembled context for manual inspection / stub.
-        if use_hf_tgi and HF_PATCHER_ADAPTER:
-            try:
-                patcher_fn = hf_tgi_chat(HF_PATCHER_ADAPTER)
-                patcher_sys = "You are a code Patcher. Generate a unified diff implementing this plan. Output ONLY a unified diff in standard git format."
-                patcher_user = json.dumps(patcher_input, default=str)
-                
-                if AUTOBOT_STOP_AT == "patcher":
-                    raw_diff = patcher_fn(patcher_sys, patcher_user)
-                    critic_input_mock = {
-                        "issue_title": title,
-                        "issue_body": body[:4000],
-                        "plan": approved_raw,
-                        "diff": raw_diff[:8000]
+            # ── Stream the Patcher graph for per-node observability ──
+            from datetime import datetime
+            final_state = initial_state.copy()
+            graph_log = []
+            for event in patcher_graph.stream(initial_state, config, stream_mode="updates"):
+                graph_log.append(event)
+                for node_name, node_state in event.items():
+                    print(f"[Stream] node={node_name} status={node_state.get('status','?')} "
+                          f"iter={node_state.get('iterations','?')} "
+                          f"critic={node_state.get('critic_verdict','–')} "
+                          f"error_class={node_state.get('sandbox_error_class','–')}")
+                    final_state.update(node_state)
+
+            # Persist full stream log
+            ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+            os.makedirs("logs", exist_ok=True)
+            log_path = os.path.join("logs", f"langgraph_patcher_{n_int}_{ts}.json")
+            with open(log_path, "w") as f:
+                json.dump(graph_log, f, default=str, indent=2)
+
+            # Persist per-iteration patcher history
+            patcher_history = final_state.get("patcher_history", [])
+            if patcher_history:
+                trace_path = os.path.join("logs", f"patcher_trace_{n_int}_{ts}.json")
+                with open(trace_path, "w") as f:
+                    json.dump(patcher_history, f, default=str, indent=2)
+
+            if final_state.get("status") == "failed":
+                return JSONResponse({"error": final_state.get("error", "LangGraph Patcher failed")}, status_code=502)
+
+            sandbox_res = final_state.get("sandbox_result", {})
+            error_class = final_state.get("sandbox_error_class")
+
+            # ── Handle Planner escalation ──────────────────────────────────────
+            # Trigger when:
+            #   (a) Diagnostic Router classified the error as a logic/plan problem, OR
+            #   (b) The Critic explicitly REJECTED the approach (not just REVISE)
+            # In both cases the patcher cannot fix this — the plan itself needs to change.
+            critic_verdict_final = final_state.get("critic_verdict")
+            should_escalate = (
+                error_class == "escalate_planner"
+                or critic_verdict_final == "REJECT"
+            ) and sandbox_res.get("status") == "failed"
+
+            if should_escalate:
+                escalation_reason = (
+                    "Critic REJECT" if critic_verdict_final == "REJECT"
+                    else "Diagnostic Router (logic/test failure)"
+                )
+                print(
+                    f"[App] Planner escalation triggered for issue #{n_int} "
+                    f"({escalation_reason}) — re-running Planner with rejection context"
+                )
+
+                # Build rich rejection context so the re-planner can avoid the same mistake
+                rejection_context = {
+                    "failed_plan": final_state.get("plan", {}),
+                    "failed_diff": final_state.get("patch", ""),
+                    "sandbox_error": sandbox_res.get("output", ""),
+                    "critic_verdict": critic_verdict_final,
+                    "critic_feedback": final_state.get("critic_feedback", ""),
+                    "sandbox_error_class": error_class,
+                    "escalation_reason": escalation_reason,
+                    "patcher_iterations": final_state.get("iterations", 0),
+                    "debate_rounds": final_state.get("debate_rounds", 0),
+                    "context_diagnostics": final_state.get("context_diagnostics"),
+                }
+
+                chat_fn = function_registry.get(n_int, {}).get('chat_fn')
+                if not chat_fn:
+                    if use_hf_tgi and HF_PLANNER_ADAPTER:
+                        chat_fn = hf_tgi_chat(HF_PLANNER_ADAPTER)
+                    elif use_google_ai:
+                        chat_fn = google_ai_chat
+                    elif use_vertex:
+                        chat_fn = vertex_chat
+                    elif use_ollama:
+                        chat_fn = ollama_chat
+                    if chat_fn:
+                        function_registry[n_int]["chat_fn"] = chat_fn
+
+                if chat_fn:
+                    repo_ctx = build_repo_context(repo)
+                    replan_state = {
+                        "issue_number": n_int,
+                        "title": title,
+                        "body": body,
+                        "repo_path": repo,
+                        "repo_context": repo_ctx,
+                        "ts_index": _ts_index,
+                        "backend_label": f"hf_tgi:{HF_PLANNER_ADAPTER}" if use_hf_tgi else AUTOBOT_MODE,
+                        # Pass failure evidence so planner_node can inject it into the prompt
+                        "rejection_context": rejection_context,
                     }
+                    replan_log = []
+                    replan_final = replan_state.copy()
+                    for event in planner_graph.stream(replan_state, config, stream_mode="updates"):
+                        replan_log.append(event)
+                        for node_name, node_state in event.items():
+                            replan_final.update(node_state)
+
+                    ts2 = datetime.now().strftime("%Y%m%dT%H%M%S")
+                    with open(os.path.join("logs", f"langgraph_replanner_{n_int}_{ts2}.json"), "w") as f:
+                        json.dump(replan_log, f, default=str, indent=2)
+
+                    new_plan = replan_final.get("plan", {})
                     return {
                         "issue_number": n_int,
-                        "status": "stopped_at_patcher",
-                        "generated_diff": raw_diff,
-                        "critic_input": critic_input_mock,
-                        "note": "AUTOBOT_STOP_AT=patcher. Stopped before calling Critic."
+                        "diff": final_state.get("patch", ""),
+                        "verdict": "ESCALATED_TO_PLANNER",
+                        "feedback": (
+                            f"Escalation reason: {escalation_reason}\n"
+                            f"Critic feedback: {final_state.get('critic_feedback', '(none)')}\n"
+                            f"Sandbox error: {sandbox_res.get('output', '')[:800]}\n\n"
+                            "A new plan has been generated. Please review and re-approve."
+                        ),
+                        "new_plan": new_plan,
+                        "patcher_history": patcher_history,
+                        "rejection_context": rejection_context,
+                        "debug": {
+                            "patcher_log": log_path,
+                            "replanner_log": os.path.join("logs", f"langgraph_replanner_{n_int}_{ts2}.json"),
+                            "escalation_reason": escalation_reason,
+                            "critic_verdict": critic_verdict_final,
+                            "patcher_iterations": final_state.get("iterations", 0),
+                        }
                     }
+                else:
+                    return JSONResponse({
+                        "error": "Sandbox failed with a logic error requiring replanning, but no Planner LLM is configured.",
+                        "sandbox_output": sandbox_res.get("output", ""),
+                        "rejection_context": rejection_context,
+                        "patcher_history": patcher_history,
+                    }, status_code=502)
 
-                diff, verdict, feedback = llm_patch_and_critic(patcher_fn, title, body, approved_raw, plan.code_spans, f"hf_tgi:{HF_PATCHER_ADAPTER}")
-                return {"issue_number": n_int, "diff": diff, "verdict": verdict, "feedback": feedback,
-                        "patcher_input_summary": {"primary": len(patcher_input["file_contexts"]["primary"]),
-                                                   "supporting": len(patcher_input["file_contexts"]["supporting"]),
-                                                   "tests": len(patcher_input["file_contexts"]["tests"])}}
-            except Exception as e:
-                error_msg = str(e)
-                print(f"[ERROR] Patcher/Critic exception: {error_msg}")
-                model_name = "Patcher LLM" if "[PATCHER]" in error_msg else "Critic LLM" if "[CRITIC]" in error_msg else "LLM"
-                if "503" in error_msg or "Service Unavailable" in error_msg:
-                    error_msg = f"I'm unable to talk to the {model_name} at the moment (Endpoint is likely paused or offline)."
-                elif "401" in error_msg or "Unauthorized" in error_msg:
-                    error_msg = f"I cannot authenticate with the {model_name}. Please check your tokens in the .env file."
-                return JSONResponse({"error": error_msg}, status_code=502)
 
-        # Fallback: return assembled context so frontend can display it
-        return {
-            "issue_number": n_int,
-            "status": "context_assembled",
-            "patcher_input": {
-                "planner_directive": patcher_input["planner_directive"],
-                "allowed_edit_files": patcher_input["allowed_edit_files"],
-                "file_contexts": {
-                    "primary_count": len(patcher_input["file_contexts"]["primary"]),
-                    "supporting_count": len(patcher_input["file_contexts"]["supporting"]),
-                    "tests_count": len(patcher_input["file_contexts"]["tests"]),
-                    "primary_files": [c["file"] for c in patcher_input["file_contexts"]["primary"]],
-                    "supporting_files": [c["file"] for c in patcher_input["file_contexts"]["supporting"]],
-                    "test_files": [c["file"] for c in patcher_input["file_contexts"]["tests"]],
-                },
-            },
-            "note": "Patcher adapter not configured. Set HF_TGI_ENDPOINT + HF_PATCHER_ADAPTER in .env.",
-        }
+
+            # ── Normal (non-escalation) response ──────────────────────────────
+            return {
+                "issue_number": n_int,
+                "diff": final_state.get("patch", ""),
+                "verdict": "APPROVED" if sandbox_res.get("status") == "passed" else "REJECTED",
+                "feedback": sandbox_res.get("output", ""),
+                "patcher_history": patcher_history,
+                "debug": {
+                    "iterations": final_state.get("iterations", 0),
+                    "debate_rounds": final_state.get("debate_rounds", 0),
+                    "critic_verdict": final_state.get("critic_verdict"),
+                    "critic_feedback": final_state.get("critic_feedback"),
+                    "sandbox_error_class": error_class,
+                    "patcher_log": log_path,
+                }
+            }
+        except Exception as e:
+            return JSONResponse({"error": f"LangGraph execution failed: {e}"}, status_code=502)
+
 
 
     if command == "accept_plan":
         plan = data.get("plan")
         code_spans = data.get("code_spans")
         issue_number = data.get("issue_number")
+        repo = str(data.get("repo_path") or "").strip()
         issue_title = "Unknown issue title"
         issue_body = ""
         try:
@@ -1440,6 +1745,84 @@ async def orchestrate(request: Request):
                 issue_title, issue_body = _issue_title_body(int(issue_number))
         except (TypeError, ValueError):
             pass
+
+        # ── hf_tgi: route through the full LangGraph patcher graph (same as approve_plan)
+        # This gives the patcher proper file contexts from assemble_patcher_input.
+        if use_hf_tgi:
+            try:
+                n_int = int(issue_number) if issue_number is not None else 0
+                if not repo or not Path(repo).expanduser().is_dir():
+                    return JSONResponse({"error": f"repo_path required for hf_tgi patcher: {repo!r}"}, status_code=400)
+
+                patcher_fn = hf_tgi_patcher_chat(HF_PATCHER_ADAPTER) if HF_PATCHER_ADAPTER else None
+                if patcher_fn is None:
+                    return JSONResponse({"error": "HF_PATCHER_ADAPTER is not set in .env"}, status_code=500)
+
+                critic_fn = hf_tgi_chat(HF_CRITIC_ADAPTER) if HF_CRITIC_ADAPTER else patcher_fn
+
+                if n_int not in function_registry:
+                    function_registry[n_int] = {}
+                function_registry[n_int]["patcher_fn"] = patcher_fn
+                function_registry[n_int]["critic_fn"] = critic_fn
+
+                # Normalise plan so patcher_prep_node can build file contexts
+                plan_dict = plan if isinstance(plan, dict) else {}
+                if "code_spans" not in plan_dict and code_spans:
+                    plan_dict = dict(plan_dict)
+                    plan_dict["code_spans"] = code_spans
+
+                config = {"configurable": {"thread_id": str(n_int)}}
+                initial_state = {
+                    "issue_number": n_int,
+                    "title": issue_title,
+                    "body": issue_body,
+                    "repo_path": repo,
+                    "ts_index": _ts_index,
+                    "backend_label": f"hf_tgi:{HF_PATCHER_ADAPTER}",
+                    "plan": plan_dict,
+                    "iterations": 0,
+                    "debate_rounds": 0,
+                    "patcher_history": [],
+                    "critic_verdict": None,
+                    "critic_feedback": None,
+                    "sandbox_error_class": None,
+                }
+
+                from datetime import datetime
+                final_state = initial_state.copy()
+                graph_log = []
+                for event in patcher_graph.stream(initial_state, config, stream_mode="updates"):
+                    graph_log.append(event)
+                    for node_name, node_state in event.items():
+                        print(f"[Stream][accept_plan] node={node_name} status={node_state.get('status','?')}")
+                        final_state.update(node_state)
+
+                ts_str = datetime.now().strftime("%Y%m%dT%H%M%S")
+                os.makedirs("logs", exist_ok=True)
+                log_path = os.path.join("logs", f"langgraph_patcher_accept_{n_int}_{ts_str}.json")
+                with open(log_path, "w") as f:
+                    json.dump(graph_log, f, default=str, indent=2)
+
+                if final_state.get("status") == "failed":
+                    return JSONResponse({"error": final_state.get("error", "Patcher failed")}, status_code=502)
+
+                sandbox_res = final_state.get("sandbox_result", {})
+                return {
+                    "diff": final_state.get("patch", ""),
+                    "verdict": "APPROVED" if sandbox_res.get("status") == "passed" else final_state.get("critic_verdict", "REVISE"),
+                    "reasoning": final_state.get("critic_feedback", sandbox_res.get("output", "")),
+                    "plan_echo": plan_dict,
+                    "iterations_used": final_state.get("iterations", 1),
+                    "note": f"patcher via LangGraph hf_tgi:{HF_PATCHER_ADAPTER}",
+                    "progress": [
+                        f"iter={h.get('iteration')} sandbox={h.get('sandbox_result',{}).get('status')} critic={h.get('critic_verdict')}"
+                        for h in final_state.get("patcher_history", [])
+                    ],
+                    "debug": {"patcher_log": log_path},
+                }
+            except Exception as e:
+                return JSONResponse({"error": f"hf_tgi accept_plan failed: {e}"}, status_code=502)
+
         if use_google_ai:
             try:
                 return llm_patch_and_critic(google_ai_chat, issue_title, issue_body, plan, code_spans, f"google_ai:{GEMINI_MODEL}")
@@ -1471,9 +1854,10 @@ async def orchestrate(request: Request):
                 return JSONResponse({"error": error_msg}, status_code=502)
 
         return JSONResponse(
-            {"error": "No active LLM mode for accept_plan. Set AUTOBOT_MODE to google_ai, vertex, or ollama and restart."},
+            {"error": "No active LLM mode for accept_plan. Set AUTOBOT_MODE to google_ai, vertex, ollama, or hf_tgi and restart."},
             status_code=400,
         )
+
 
     if command == "open_pr":
         diff = str(data.get("diff") or "")

@@ -1,8 +1,10 @@
 import os
 from dotenv import load_dotenv
 
-# Load from project root .env
-load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"), override=True)
+# Load .env — works locally; on Render, env vars are injected directly
+_here = os.path.dirname(__file__)
+load_dotenv(os.path.join(_here, ".env"), override=False)          # slackbot/.env (if present)
+load_dotenv(os.path.join(_here, "../.env"), override=False)       # project root .env (local dev)
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "apache/airflow")
@@ -16,7 +18,9 @@ SCORER_ENDPOINT = os.getenv("SCORER_ENDPOINT", "")
 REASONER_ENDPOINT = os.getenv("REASONER_ENDPOINT", "")
 SCORER_THRESHOLD = float(os.getenv("SCORER_THRESHOLD", "0.8"))
 POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "1800"))
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
-# Validation
+# Validation — warn but don't crash; RLHF service doesn't need GITHUB_TOKEN
 if not GITHUB_TOKEN:
-    raise ValueError("GITHUB_TOKEN missing from .env")
+    print("WARNING: GITHUB_TOKEN not set — GitHub polling will be disabled.")
