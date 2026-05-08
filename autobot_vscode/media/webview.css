@@ -360,10 +360,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  color: var(--vscode-descriptionForeground, #9cdcfe);
+  color: var(--vscode-foreground, #d4d4d4);
   border-top: 1px solid var(--vscode-widget-border, rgba(128,128,128,0.3));
   margin-top: 8px;
   padding-top: 8px;
+}
+.ab-card-meta strong {
+  color: var(--vscode-textLink-foreground, #4daafc);
 }
 .ab-card-meta a {
   color: var(--vscode-textLink-foreground, #4daafc);

@@ -524,6 +524,18 @@
 
   // ── UI renderers ──────────────────────────────────────────
 
+  function escapeHtml(unsafe) {
+    return (unsafe || "").replace(/[&<"']/g, function(m) {
+      switch (m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '"': return '&quot;';
+        case "'": return '&#039;';
+      }
+      return m;
+    });
+  }
+
   function renderIssueCard(data) {
     const wrap = el("div", "ab-card");
     const state = (data.state || "open").toLowerCase();
@@ -538,7 +550,7 @@
           <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.82em; text-decoration:none; margin-left:auto;">↗ GitHub</a>
           <div class="ab-card-expand-icon">▼</div>
         </div>
-        <span class="ab-card-title-text">${data.title || "(no title)"}</span>
+        <span class="ab-card-title-text">${escapeHtml(data.title) || "(no title)"}</span>
       </div>
     `;
     wrap.appendChild(header);
@@ -547,13 +559,18 @@
     const bodyEl = el("div", "ab-card-body");
     
     const desc = el("div", "ab-card-desc");
-    desc.textContent = data.body ? (data.body.length > 800 ? data.body.slice(0, 800) + "..." : data.body) : "No description provided.";
+    if (data.body && data.body.length > 800) {
+      desc.innerHTML = escapeHtml(data.body.slice(0, 800)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more on GitHub</a>`;
+    } else {
+      desc.textContent = data.body || "No description provided.";
+    }
     bodyEl.appendChild(desc);
 
     const meta = el("div", "ab-card-meta");
 
-    let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
-    let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
+    let openedOn = data.created_at || data.createdAt || data.date;
+    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown (missing)";
+    let relativeStr = openedOn ? ` (${formatTimeDelta(openedOn)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
 
     meta.innerHTML = `
@@ -587,7 +604,7 @@
           <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.82em; text-decoration:none; margin-left:auto;">↗ GitHub</a>
           <div class="ab-card-expand-icon">▼</div>
         </div>
-        <span class="ab-card-title-text">${data.title || "(no title)"}</span>
+        <span class="ab-card-title-text">${escapeHtml(data.title) || "(no title)"}</span>
       </div>
     `;
     wrap.appendChild(header);
@@ -596,13 +613,18 @@
     const bodyEl = el("div", "ab-card-body");
     
     const desc = el("div", "ab-card-desc");
-    desc.textContent = data.body ? (data.body.length > 800 ? data.body.slice(0, 800) + "..." : data.body) : "No description provided.";
+    if (data.body && data.body.length > 800) {
+      desc.innerHTML = escapeHtml(data.body.slice(0, 800)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more on GitHub</a>`;
+    } else {
+      desc.textContent = data.body || "No description provided.";
+    }
     bodyEl.appendChild(desc);
 
     const meta = el("div", "ab-card-meta");
 
-    let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
-    let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
+    let openedOn = data.created_at || data.createdAt || data.date;
+    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown (missing)";
+    let relativeStr = openedOn ? ` (${formatTimeDelta(openedOn)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
     let reviewsCount = data.reviews !== undefined ? data.reviews : 0;
 
