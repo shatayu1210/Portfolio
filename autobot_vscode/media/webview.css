@@ -290,20 +290,28 @@ body {
 }
 .ab-card-title-group {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   font-size: 0.85em;
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
-.ab-card-title-group strong {
-  color: var(--vscode-textLink-foreground, #4daafc);
+.ab-card-title-row1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ab-card-title-row1 strong {
+  color: var(--vscode-foreground);
   white-space: nowrap;
 }
 .ab-card-title-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+  color: var(--vscode-foreground);
+  font-size: 0.97em;
 }
 .ab-card-badge {
   font-size: 0.7em;
@@ -314,7 +322,7 @@ body {
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
-.ab-card-badge.open { background: rgba(51,153,51,0.2); color: #4ec94e; border: 1px solid rgba(51,153,51,0.3); }
+.ab-card-badge.open { background: rgba(220,220,220,0.12); color: #d4d4d4; border: 1px solid rgba(200,200,200,0.25); }
 .ab-card-badge.closed { background: rgba(200,80,80,0.2); color: #e07070; border: 1px solid rgba(200,80,80,0.3); }
 .ab-card-badge.merged { background: rgba(130,50,200,0.2); color: #b466ff; border: 1px solid rgba(130,50,200,0.3); }
 
@@ -347,11 +355,15 @@ body {
   overflow-y: auto;
 }
 .ab-card-meta {
-  font-size: 0.9em;
-  opacity: 0.6;
+  font-size: 0.88em;
+  opacity: 1;
   display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--vscode-descriptionForeground, #9cdcfe);
+  border-top: 1px solid var(--vscode-widget-border, rgba(128,128,128,0.3));
+  margin-top: 8px;
+  padding-top: 8px;
 }
 .ab-card-meta a {
   color: var(--vscode-textLink-foreground, #4daafc);

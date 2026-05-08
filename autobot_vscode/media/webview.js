@@ -532,15 +532,13 @@
     const header = el("div", "ab-card-header");
     header.innerHTML = `
       <div class="ab-card-title-group">
-        <span class="ab-card-badge ${state}">${state}</span>
-        <strong>#${data.issue_number}</strong>
-        <span class="ab-card-title-text" title="${data.title?.replace(/"/g, '&quot;') || "(no title)"}">
-          ${data.title || "(no title)"}
-        </span>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.85em; text-decoration:none;">↗ GitHub</a>
-        <div class="ab-card-expand-icon">▼</div>
+        <div class="ab-card-title-row1">
+          <span class="ab-card-badge ${state}">${state}</span>
+          <strong>Issue #${data.issue_number}</strong>
+          <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.82em; text-decoration:none; margin-left:auto;">↗ GitHub</a>
+          <div class="ab-card-expand-icon">▼</div>
+        </div>
+        <span class="ab-card-title-text">${data.title || "(no title)"}</span>
       </div>
     `;
     wrap.appendChild(header);
@@ -553,9 +551,6 @@
     bodyEl.appendChild(desc);
 
     const meta = el("div", "ab-card-meta");
-    meta.style.flexDirection = "column";
-    meta.style.alignItems = "flex-start";
-    meta.style.gap = "4px";
 
     let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
     let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
@@ -586,15 +581,13 @@
     const prNum = data.pr_number || data.number;
     header.innerHTML = `
       <div class="ab-card-title-group">
-        <span class="ab-card-badge ${state}">${state}</span>
-        <strong>PR #${prNum}</strong>
-        <span class="ab-card-title-text" title="${data.title?.replace(/"/g, '&quot;') || "(no title)"}">
-          ${data.title || "(no title)"}
-        </span>
-      </div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.85em; text-decoration:none;">↗ GitHub</a>
-        <div class="ab-card-expand-icon">▼</div>
+        <div class="ab-card-title-row1">
+          <span class="ab-card-badge ${state}">${state}</span>
+          <strong>PR #${prNum}</strong>
+          <a href="${data.html_url || "#"}" target="_blank" onclick="event.stopPropagation()" style="font-size:0.82em; text-decoration:none; margin-left:auto;">↗ GitHub</a>
+          <div class="ab-card-expand-icon">▼</div>
+        </div>
+        <span class="ab-card-title-text">${data.title || "(no title)"}</span>
       </div>
     `;
     wrap.appendChild(header);
@@ -607,14 +600,11 @@
     bodyEl.appendChild(desc);
 
     const meta = el("div", "ab-card-meta");
-    meta.style.flexDirection = "column";
-    meta.style.alignItems = "flex-start";
-    meta.style.gap = "4px";
 
     let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
     let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
-    let reviewsCount = data.reviews !== undefined ? data.reviews : "Unknown";
+    let reviewsCount = data.reviews !== undefined ? data.reviews : 0;
 
     meta.innerHTML = `
       <div><strong>Opened On:</strong> ${openDateStr}${relativeStr}</div>

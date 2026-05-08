@@ -487,12 +487,27 @@ def stub_ask_issue(issue_number: int) -> dict[str, Any]:
 def stub_ask_pr(pr_number: int) -> dict[str, Any]:
     gh = gh_get_pr(pr_number)
     if gh:
-        return gh
+        reviews = gh_get_pr_reviews(pr_number)
+        return {
+            "pr_number": pr_number,
+            "title": gh.get("title", ""),
+            "body": gh.get("body") or "",
+            "state": gh.get("state", ""),
+            "html_url": gh.get("html_url", ""),
+            "created_at": gh.get("created_at", ""),
+            "assignee": gh.get("assignee"),
+            "merged": gh.get("merged", False),
+            "merged_at": gh.get("merged_at"),
+            "closed_at": gh.get("closed_at"),
+            "reviews": len(reviews) if isinstance(reviews, list) else 0,
+            "note": f"live GitHub PR from {GITHUB_OWNER}/{GITHUB_REPO}",
+        }
     return {
         "pr_number": pr_number,
         "title": f"[STUB] PR #{pr_number}",
         "body": "Stub PR — set GITHUB_TOKEN + GITHUB_OWNER/GITHUB_REPO for live GitHub data.",
         "state": "open",
+        "reviews": 0,
         "html_url": f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/pull/{pr_number}",
     }
 
