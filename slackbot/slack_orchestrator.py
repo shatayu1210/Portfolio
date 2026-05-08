@@ -125,53 +125,6 @@ def node_score(state: PipelineState) -> PipelineState:
         return {**state, "high_issues": [], "analyzed_issues": [], "sent_count": 0, "failed_count": 0, "error": str(e)}
 
 
-def node_threshold_check(state: PipelineState) -> str:
-    """
-    Conditional edge — decides next node based on whether
-    any HIGH severity issues were found.
-    Returns: 'reason' or 'skip'
-    """
-    if state.get("high_issues"):
-        print(f"[LangGraph] threshold_check → {len(state['high_issues'])} HIGH issues → routing to Reasoner")
-        return "reason"
-    else:
-        print(f"[LangGraph] threshold_check → no HIGH issues → skipping")
-        return "skip"
-
-
-def node_reason(state: PipelineState) -> PipelineState:
-    """Node 3 — Reasoner analyzes HIGH severity issues."""
-    print(f"[LangGraph] node_reason running on {len(state['high_issues'])} issues...")
-    try:
-        analyzed = run_reasoner(state["high_issues"])
-        return {**state, "analyzed_issues": analyzed}
-    except Exception as e:
-        print(f"[LangGraph] node_reason error: {e}")
-        return {**state, "analyzed_issues": [], "error": str(e)}
-
-
-def node_notify(state: PipelineState) -> PipelineState:
-    """Node 4 — Send Slack notifications."""
-    print(f"[LangGraph] node_notify running on {len(state['analyzed_issues'])} issues...")
-    try:
-        result = run_notifier(state["analyzed_issues"])
-        return {
-            **state,
-            "sent_count":   result["sent"],
-            "failed_count": result["failed"]
-        }
-    except Exception as e:
-        print(f"[LangGraph] node_notify error: {e}")
-        return {**state, "sent_count": 0, "failed_count": 0, "error": str(e)}
-
-
-def node_skip(state: PipelineState) -> PipelineState:
-    """Node — No high severity issues, nothing to do."""
-    print(f"[LangGraph] node_skip → cycle complete, no notifications sent")
-    return {**state, "sent_count": 0, "failed_count": 0}
-
-
-
 # ── Build LangGraph pipeline ──────────────────────────────────────────────────
 
 def build_pipeline() -> any:
@@ -182,29 +135,13 @@ def build_pipeline() -> any:
     # Add nodes
     graph.add_node("poll",   node_poll)
     graph.add_node("score",  node_score)
-    graph.add_node("reason", node_reason)
-    graph.add_node("notify", node_notify)
-    graph.add_node("skip",   node_skip)
 
     # Entry point
     graph.set_entry_point("poll")
 
     # Edges
     graph.add_edge("poll", "score")
-
-    # Conditional edge after scoring
-    graph.add_conditional_edges(
-        "score",
-        node_threshold_check,
-        {
-            "reason": "reason",
-            "skip":   "skip"
-        }
-    )
-
-    graph.add_edge("reason", "notify")
-    graph.add_edge("notify", END)
-    graph.add_edge("skip",   END)
+    graph.add_edge("score", END)
 
     return graph.compile()
 

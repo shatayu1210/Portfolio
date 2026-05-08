@@ -200,6 +200,7 @@ def run_sentinel(issues: list[dict], on_high_found=None) -> list[dict]:
 
         try:
             scored = score_issue(issue)
+            issues[i].update(scored)
             cls    = scored["predicted_class"]
             conf   = scored["confidence_score"]
             raw    = scored["raw_output"][:30]
