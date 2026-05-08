@@ -45,6 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Prometheus metrics (/metrics endpoint for Prometheus scraping) ────────────
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app)
+
 AUTOBOT_MODE = os.environ.get("AUTOBOT_MODE", "stub").lower()
 AUTOBOT_STOP_AT = os.environ.get("AUTOBOT_STOP_AT", "").strip().lower()
 
