@@ -8,9 +8,11 @@ This guide covers deploying the AutoBot Slack integration and RLHF pipeline to a
 - **RunPod Serverless**: Handles the heavy GPU DPO training dynamically via `dpo_train_job.py` (hosted on a GitHub Gist).
 
 ## 2. Docker Deployment
-Both orchestrators can be bundled into a single Docker image or deployed as separate containers using `docker-compose`.
+We use a unified **root `docker-compose.yml`** to spin up the entire ecosystem, including the orchestrators, Sandbox, Neo4j, and the full observability stack (Loki, Promtail, Prometheus, Grafana).
 
 **Important Files to bundle:**
+- The root `docker-compose.yml`.
+- `observability/prometheus.yml` and `observability/promtail-config.yaml`.
 - The entire `slackbot/` directory.
 - `slackbot/rlhf/eval_gold_set.json`: **CRITICAL**. This file contains the human-curated Gold Set used by the LLM-as-a-Judge during evaluation. When deploying to the cloud, ensure this file is baked into the Docker image or mounted via a persistent volume so `eval_runner.py` can read it.
 

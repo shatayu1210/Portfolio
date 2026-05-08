@@ -11,7 +11,6 @@ This folder contains the local Neo4j GraphRAG setup used to enrich planner/patch
 
 ## Files
 
-- `docker-compose.yml`: local Neo4j service (with persistent volumes).
 - `ingest_graph_actual.py`: graph ingestion script from cleaned ETL JSONL.
 - `vectorize_issues.py`: optional local embedding generation for issues.
 
@@ -19,24 +18,17 @@ This folder contains the local Neo4j GraphRAG setup used to enrich planner/patch
 
 ### 1) Start Neo4j
 
-**Preferred — root compose (brings up only Neo4j):**
+Use the root docker-compose file:
+
 ```bash
 # From the repo root
 cd autobot_dev
-docker compose up neo4j -d
+docker compose up -d neo4j
 ```
 
-**Standalone (this directory only):**
-```bash
-cd autobot_dev/graphrag
-docker compose up -d
-```
-
-The compose file persists DB data under:
-- `graphrag/data` (database files)
-- `graphrag/logs`
-- `graphrag/plugins`
-- `graphrag/import`
+The root compose file persists DB data under:
+- Docker volume `neo4j_data` (database files)
+- Docker volume `neo4j_logs`
 
 So normal restarts do not require re-ingestion.
 

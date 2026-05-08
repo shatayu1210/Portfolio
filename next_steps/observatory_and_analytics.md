@@ -227,11 +227,11 @@ Alert examples:
 
 ## 8) Implementation checklist (for AI IDE or engineer)
 
-1. **Instrument** each agent service with Prometheus client (Python: `prometheus_client`; expose `/metrics` on a dedicated port or path).  
-2. **Add middleware** to emit `requests_total`, `latency_seconds`, `errors_total` for each route.  
+1. **Instrument** each agent service with Prometheus client using `prometheus-fastapi-instrumentator`. This automatically exposes `/metrics` on a dedicated path and tracks latencies and error rates without manual middleware.
+2. **Collect logs** via Promtail. Do not use application-level log pushers. Let Promtail scrape `/var/lib/docker/containers/*` and push to Loki.
 3. **Orchestrator** emits stage counters and refinement-specific metrics at decision points.  
 4. **Deploy Prometheus** with scrape configs pointing at all service `/metrics` endpoints.  
-5. **Deploy Grafana**, add Prometheus data source, import/create dashboards in §6.  
+5. **Deploy Grafana**, add Prometheus and Loki data sources, import/create dashboards in §6.  
 6. **Emit Snowflake events** asynchronously (do not block request path; use queue or batch buffer).  
 7. **PII/secret policy**: no raw tokens in metrics; redact in Snowflake `metadata` or store hashes.  
 8. **Document** SLOs and on-call runbooks in `docs/` or this folder.

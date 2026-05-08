@@ -2,39 +2,24 @@
 
 This guide outlines how to integrate Loki, Prometheus, Grafana, and LangSmith into the AutoBot system to achieve production-grade observability.
 
-## 1. Centralized Logging (Loki)
-Currently, logs are written locally to `slackbot/rlhf/logs/`. To centralize this so logs from both the orchestrator and the pipeline are visible in Grafana:
-1. Install `python-logging-loki`:
-   ```bash
-   pip install python-logging-loki
-   ```
-2. Update the `_make_run_logger` function in `rlhf_orchestrator.py` and the main logger in `slack_orchestrator.py`:
-   ```python
-   import logging_loki
-   handler = logging_loki.LokiHandler(
-       url="https://<your-loki-endpoint>/loki/api/v1/push", 
-       tags={"application": "autobot-rlhf"},
-       version="1",
-   )
-   logger.addHandler(handler)
-   ```
+## 1. Centralized Logging (Loki & Promtail)
+Currently, logs are written locally to `slackbot/rlhf/logs/` and container stdout. To centralize this so logs from both the orchestrator and the pipeline are visible in Grafana:
+We use **Promtail** to automatically scrape Docker container logs from `/var/lib/docker/containers/` and push them to Loki. 
+This requires **zero code changes** to your python code. Just ensure your services are running in Docker or outputting to a place Promtail is configured to scrape (see `observability/promtail-config.yaml`).
 
 ## 2. Metrics (Prometheus & Grafana)
-Track metrics like Slack event processing time, RLHF training duration, and evaluation scores.
-1. Install `prometheus-client`:
-   ```bash
-   pip install prometheus-client
-   ```
-2. In `slack_orchestrator.py` and `rlhf_orchestrator.py`, expose a `/metrics` FastAPI endpoint.
-3. Add decorators to track API latency or failure rates:
-   ```python
-   from prometheus_client import Summary
-   REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
+Track metrics like API latency or failure rates. We use `prometheus-fastapi-instrumentator`.
 
-   @REQUEST_TIME.time()
-   def handle_adhoc_query(...):
+1. Install the package (already in `requirements.txt`):
+   ```bash
+   pip install prometheus-fastapi-instrumentator
    ```
-4. Point your Grafana instance to your Prometheus server to visualize AutoBot's uptime and RLHF success rates.
+2. In `app.py` (or `slack_orchestrator.py`), expose a `/metrics` FastAPI endpoint:
+   ```python
+   from prometheus_fastapi_instrumentator import Instrumentator
+   Instrumentator().instrument(app).expose(app)
+   ```
+3. Update `observability/prometheus.yml` to scrape this target. Point your Grafana instance to your Prometheus server to visualize AutoBot's uptime.
 
 ## 3. Tracing LLM Flows (LangSmith)
 AutoBot relies heavily on OpenAI and Hugging Face endpoint calls. LangSmith helps trace the exact prompts and token usage.

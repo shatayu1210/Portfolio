@@ -30,16 +30,17 @@ Without these, GraphRAG ingestion will not run correctly.
 
 ---
 
-### 2) Start Neo4j and ingest GraphRAG
+### 2) Start the Root Stack (Neo4j + Observability)
 
 From the repo root (`autobot_dev`):
 
 ```bash
-cd autobot_dev/graphrag
 docker compose up -d
 ```
 
-Wait until Neo4j is healthy (first start can take a minute). Default credentials (see `graphrag/docker-compose.yml`): user **`neo4j`**, password **`autobot_password`**.
+This starts **Neo4j** (GraphRAG), the **Sandbox**, and the full observability stack (**Loki, Promtail, Prometheus, Grafana**). 
+Wait until Neo4j is healthy (first start can take a minute). Default Neo4j credentials: user **`neo4j`**, password **`autobot_password`**.
+Grafana is available at `http://localhost:3000` (user/pass: `admin`/`admin` by default).
 
 Install Python deps at repo root if you have not already:
 
