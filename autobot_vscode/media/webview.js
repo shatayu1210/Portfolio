@@ -1,5 +1,6 @@
 (function () {
   "use strict";
+  console.log("AUTOBOT WEBVIEW: VERSION 2.0 - TARGETING " + "http://34.30.13.45:8000");
   const vscode = acquireVsCodeApi();
 
   // ── DOM refs ──────────────────────────────────────────────
@@ -15,12 +16,16 @@
   let lastPlan = null;       // stored plan JSON after plan_patch
   let lastDiff = null;       // stored diff after accept_plan
   let isBusy = false;
+  let serverUrl = "http://localhost:5000"; // fallback
 
   // ── Message bus ───────────────────────────────────────────
   window.addEventListener("message", (event) => {
     const msg = event.data;
 
     if (msg.type === "config") {
+      if (msg.serverUrl) {
+        serverUrl = msg.serverUrl.replace(/\/$/, "");
+      }
       if (!repoInput.value && msg.defaultRepoPath) {
         repoInput.value = msg.defaultRepoPath;
       }
@@ -254,7 +259,7 @@
     scrollToBottom();
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/orchestrate_stream", {
+      const response = await fetch(`${serverUrl}/api/orchestrate_stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ command: "query", query: text }),
@@ -364,7 +369,7 @@
     scrollToBottom();
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/orchestrate_stream", {
+      const response = await fetch(`${serverUrl}/api/orchestrate_stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ command: "plan_patch", issue_number: n, repo_path: repo }),
