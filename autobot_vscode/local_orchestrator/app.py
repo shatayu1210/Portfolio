@@ -411,6 +411,8 @@ def fetch_github_issue(issue_number: int) -> dict[str, Any] | None:
         "body": data.get("body") or "",
         "state": data.get("state", ""),
         "html_url": data.get("html_url", ""),
+        "created_at": data.get("created_at", ""),
+        "assignee": data.get("assignee"),
         "note": f"live GitHub issue from {GITHUB_OWNER}/{GITHUB_REPO}",
     }
 

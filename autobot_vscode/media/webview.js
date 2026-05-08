@@ -558,10 +558,11 @@
     meta.style.gap = "4px";
 
     let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
+    let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
 
     meta.innerHTML = `
-      <div><strong>Opened On:</strong> ${openDateStr}</div>
+      <div><strong>Opened On:</strong> ${openDateStr}${relativeStr}</div>
       <div><strong>Assignee:</strong> ${assigneeStr}</div>
     `;
     bodyEl.appendChild(meta);
@@ -611,11 +612,12 @@
     meta.style.gap = "4px";
 
     let openDateStr = data.created_at ? new Date(data.created_at).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown";
+    let relativeStr = data.created_at ? ` (${formatTimeDelta(data.created_at)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
     let reviewsCount = data.reviews !== undefined ? data.reviews : "Unknown";
 
     meta.innerHTML = `
-      <div><strong>Opened On:</strong> ${openDateStr}</div>
+      <div><strong>Opened On:</strong> ${openDateStr}${relativeStr}</div>
       <div><strong>Assignee:</strong> ${assigneeStr}</div>
       <div><strong>Reviews Count:</strong> ${reviewsCount}</div>
     `;
