@@ -507,7 +507,7 @@ def handle_top_risk_query(n: int = 5) -> str:
         lines.append(
             f"{idx}. *<{url}|#{num}>* — {title}\n"
             f"   {emoji} `{pred}` | Score: {prob_high:.0%} | Assigned: {assignee} | "
-            f"Days open: {days_open} | Labels: {labels}\n"
+            f"Labels: {labels}\n"
             f"   <{explain_url}|🔍 Explain why this was scored>"
         )
 
