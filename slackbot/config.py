@@ -21,6 +21,6 @@ POLL_INTERVAL_SECONDS = int(os.getenv("POLL_INTERVAL_SECONDS", "1800"))
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
-# Validation
+# Validation — warn but don't crash; RLHF service doesn't need GITHUB_TOKEN
 if not GITHUB_TOKEN:
-    raise ValueError("GITHUB_TOKEN missing from .env")
+    print("WARNING: GITHUB_TOKEN not set — GitHub polling will be disabled.")

@@ -65,3 +65,5 @@ services:
         sync: false
       - key: ADAPTER_REPO
         value: "autobot298/autobot-reasoner-dpo-adapter"
+      - key: GITHUB_TOKEN
+        sync: false
