@@ -1,8 +1,10 @@
 import os
 from dotenv import load_dotenv
 
-# Load from project root .env
-load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"), override=True)
+# Load .env — works locally; on Render, env vars are injected directly
+_here = os.path.dirname(__file__)
+load_dotenv(os.path.join(_here, ".env"), override=False)          # slackbot/.env (if present)
+load_dotenv(os.path.join(_here, "../.env"), override=False)       # project root .env (local dev)
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "apache/airflow")

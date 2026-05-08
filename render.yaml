@@ -1,0 +1,67 @@
+services:
+  # ── Service 1: AutoBot Slack Orchestrator (Port 8000) ────────────────────────
+  # Handles live Slack @mentions, button clicks, and the GitHub polling loop.
+  - type: web
+    name: autobot-slack
+    runtime: python
+    rootDir: slackbot
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn slack_orchestrator:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_CHANNEL
+        sync: false
+      - key: SLACK_BOT_USER_ID
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SCORER_ENDPOINT
+        sync: false
+      - key: REASONER_ENDPOINT
+        sync: false
+      - key: SCORER_THRESHOLD
+        value: "0.8"
+      - key: POLL_INTERVAL_SECONDS
+        value: "1800"
+      - key: DEMO_MODE
+        value: "false"
+      - key: PUBLIC_BASE_URL
+        sync: false   # Set this to your Render URL after first deploy
+
+  # ── Service 2: AutoBot RLHF Orchestrator (Port 8001) ─────────────────────────
+  # Runs weekly DPO training, evaluation, and deployment pipeline.
+  # Also exposes /rlhf/status for dashboard monitoring.
+  - type: web
+    name: autobot-rlhf
+    runtime: python
+    rootDir: slackbot
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn rlhf.rlhf_orchestrator:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /rlhf/status
+    envVars:
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_CHANNEL
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: RUNPOD_API_KEY
+        sync: false
+      - key: RUNPOD_ENDPOINT_ID
+        sync: false
+      - key: RLHF_DATASET_REPO
+        value: "autobot298/autobot-feedback"
+      - key: PRODUCTION_MODEL_REPO
+        sync: false
+      - key: ADAPTER_REPO
+        value: "autobot298/autobot-reasoner-dpo-adapter"

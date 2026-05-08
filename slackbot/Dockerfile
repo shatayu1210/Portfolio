@@ -1,28 +1,21 @@
-# Use the official Python slim image
 FROM python:3.12-slim
 
-# Set environment variables
+# Prevents Python from writing pyc files and buffering stdout/stderr
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8080
+    PYTHONDONTWRITEBYTECODE=1
 
-# Install uv for fast dependency management
-RUN pip install --no-cache-dir uv
-
-# Create and set the working directory
 WORKDIR /app
 
-# Copy dependency files first (layer-cache friendly)
-COPY pyproject.toml uv.lock ./
-
-# Install dependencies into the system Python environment
-RUN uv pip install --system -r pyproject.toml
-
-# Copy the rest of the application code
+# Copy only the slackbot directory (all code lives here)
 COPY . .
 
-# Expose Cloud Run's default port
-EXPOSE 8080
+# Install all dependencies from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Use uvicorn for FastAPI production
-CMD ["uvicorn", "slack_orchestrator:app", "--host", "0.0.0.0", "--port", "8080"]
+# Expose port — Render injects $PORT at runtime
+EXPOSE 8000
+
+# Default: run the Slack Orchestrator
+# To run the RLHF Orchestrator instead, override CMD in a second Render service:
+#   cd rlhf && uvicorn rlhf_orchestrator:app --host 0.0.0.0 --port $PORT
+CMD ["sh", "-c", "uvicorn slack_orchestrator:app --host 0.0.0.0 --port ${PORT:-8000}"]
