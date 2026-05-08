@@ -223,7 +223,9 @@
       } else if (intent === "query") {
         await doQuery(text, agentEl, signal);
       } else {
-        agentEl.querySelector(".ab-bubble").appendChild(textNode("I didn't quite understand that. Try: **fix issue #45123** or **check PR #123**."));
+        const msg = `Oops, I didn't quite understand that...
+I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can help with GitHub issues, PRs, CI status, code reviews, and repository queries. I'm unable to assist with questions outside this scope.`;
+        agentEl.querySelector(".ab-bubble").appendChild(textNode(msg));
       }
     } catch (err) {
       if (err.name === "AbortError" || err.message.includes("aborted")) {
@@ -559,8 +561,8 @@
     const bodyEl = el("div", "ab-card-body");
     
     const desc = el("div", "ab-card-desc");
-    if (data.body && data.body.length > 800) {
-      desc.innerHTML = escapeHtml(data.body.slice(0, 800)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more on GitHub</a>`;
+    if (data.body && data.body.length > 400) {
+      desc.innerHTML = escapeHtml(data.body.slice(0, 400)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more</a>`;
     } else {
       desc.textContent = data.body || "No description provided.";
     }
@@ -574,7 +576,6 @@
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
 
     meta.innerHTML = `
-      <div><strong>Opened On:</strong> ${openDateStr}${relativeStr}</div>
       <div><strong>Assignee:</strong> ${assigneeStr}</div>
     `;
     bodyEl.appendChild(meta);
@@ -613,8 +614,8 @@
     const bodyEl = el("div", "ab-card-body");
     
     const desc = el("div", "ab-card-desc");
-    if (data.body && data.body.length > 800) {
-      desc.innerHTML = escapeHtml(data.body.slice(0, 800)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more on GitHub</a>`;
+    if (data.body && data.body.length > 400) {
+      desc.innerHTML = escapeHtml(data.body.slice(0, 400)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more</a>`;
     } else {
       desc.textContent = data.body || "No description provided.";
     }
