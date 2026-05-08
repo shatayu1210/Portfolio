@@ -45,7 +45,7 @@ services:
   # ── LangGraph Orchestrator ────────────────────────────────────────────────────
   orchestrator:
     build:
-      context: ./autobot-vscode/local_orchestrator
+      context: ./autobot_vscode/local_orchestrator
     container_name: autobot_orchestrator
     ports:
       - "8000:8000"
