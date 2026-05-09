@@ -205,8 +205,18 @@
       if (signal.aborted) throw new Error("Aborted by user");
       
       if (intent === "ask_issue") {
+        if (!issueNum) {
+          agentEl.querySelector(".ab-bubble").appendChild(textNode("⚠️ Please include a valid issue number in your message, e.g. `Show issue #45123`."));
+          resetInput();
+          return;
+        }
         await doAskIssue(issueNum, agentEl, signal);
       } else if (intent === "ask_pr") {
+        if (!prNum) {
+          agentEl.querySelector(".ab-bubble").appendChild(textNode("⚠️ Please include a valid PR number in your message, e.g. `Show PR #45123`."));
+          resetInput();
+          return;
+        }
         await doAskPr(prNum, agentEl, signal);
       } else if (intent === "plan_patch") {
         if (!repo) {
