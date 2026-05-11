@@ -1,40 +1,34 @@
 # AgenticAI AutoBot 🤖
-### Autonomous GitHub Orchestration & Code-Patching System
+### Proactive Triage & Autonomous Code-Patching System
 
-AutoBot is a production-grade multi-agent system designed to manage the lifecycle of software issues for large-scale repositories like **Apache Airflow**. It moves beyond simple RAG by using a **Multi-Agent Orchestration** loop to plan, write, and validate code patches autonomously.
+AutoBot is a production-grade multi-agent system designed to manage the lifecycle of software issues for large-scale repositories like **Apache Airflow**.
 
-[**Technical Setup Guide (Deep Dive) →**](./SETUP.md) | [**Full Architecture Reference (v9) →**](./docs/autobot_v9.md)
+[**Technical Setup Guide →**](./SETUP.md) | [**Full Architecture Reference (v9) →**](./docs/autobot_v9.md)
 
 ---
 
 ## 🌟 Key Capabilities
-- **Autonomous Patching:** Uses a **Planner → Patcher → Critic** cycle to generate valid `git diffs` from natural language issue descriptions.
-- **GraphRAG Reasoning:** Traverses a Neo4j knowledge graph (12k issues, 43k PRs) to find historical priors and "idiomatic" fix patterns.
-- **Safety-First Design:** Implemented "Blast Radius" containment, "Confidence HITL" gates, and a "Logical Critic" to ensure code safety.
-- **Automated RLHF Loop:** Captures human feedback in Slack and triggers serverless **DPO (Direct Preference Optimization)** retraining on RunPod.
 
+### 1. Proactive Risk Sentinel (Triage)
+Unlike reactive bots, AutoBot **proactively monitors** the repository to prevent delivery bottlenecks:
+- **Severity Scoring:** Automatically classifies every incoming issue as Low/Medium/High.
+- **Cited Reasoning:** Generates a 2-3 sentence "Risk Narrative" for high-severity issues, citing specific historical precedents and CI signals.
+- **Real-time Alerting:** Posts early-detection alerts to Slack, allowing delivery leads to reprioritize work before a bottleneck occurs.
+
+### 2. Autonomous Patching Assistant
+- **Planning:** Generates structured fix plans using historical priors from a **Neo4j GraphRAG** knowledge graph.
+- **Patching:** Fine-tuned LoRA models generate `git diffs` and validate them in a Docker sandbox.
+- **Self-Correction:** If tests fail, the **Diagnostic Router** analyzes the error and triggers an agentic re-plan.
+
+### 3. Safety & RLHF
+- **Multi-Layered Guardrails:** Blast Radius (3-file limit), Confidence HITL Gates, and a Logical Critic.
+- **Automated RLHF:** Captures human feedback in Slack and triggers serverless **DPO retraining** on RunPod.
+
+---
 ## 🏗️ System Architecture
-The system is built as a distributed monorepo:
-- **Orchestrator:** A LangGraph-based Python service managing agent state and tool-calling.
-- **Knowledge Graph:** Neo4j storing 300k+ nodes (Issues, PRs, Files) for relational retrieval.
-- **Inference:** High-concurrency HuggingFace TGI endpoints serving fine-tuned LoRA adapters.
-- **Frontend:** A premium VS Code Extension providing an interactive "Pair Programmer" experience.
-- **Observability:** Full Prometheus + Grafana stack tracking average planning latency and patch success rates.
+- **Orchestrator:** LangGraph state machine managing agent transitions.
+- **Data Engine:** Airflow + Snowflake ETL; high-speed **Go** symbol indexing (Tree-sitter).
+- **Knowledge Graph:** 300k+ node Neo4j instance for multi-hop historical reasoning.
+- **Observability:** Prometheus + Grafana dashboards for latency and success-rate tracking.
 
-## 🛡️ Multi-Layered Guardrails
-To prevent autonomous "hallucinations" in production:
-1. **Blast Radius:** Blocks any plan touching >3 files before human approval.
-2. **Confidence HITL:** Forces manual intervention if the Planner's self-scored confidence is <0.8.
-3. **Logical Critic:** A post-sandbox agent that verifies if the patch actually solves the *intent* of the issue, even if tests pass.
-4. **Sandboxed Validation:** Every patch is validated inside a Docker sandbox before being presented to the user.
-
----
-## 📁 Project Structure
-- `autobot_langgraph/`: Core orchestration logic and state graphs.
-- `autobot_vscode/`: VS Code extension source and webview UI.
-- `graphrag/`: Neo4j ingestion and Cypher tool-calling logic.
-- `slackbot/`: Sentinel triage bot and RLHF feedback collection.
-- `etl/`: Airflow DAGs for data ingestion to Snowflake.
-
----
-*For setup instructions, please refer to [SETUP.md](./SETUP.md).*
+*For full details, see [autobot_v9.md](./docs/autobot_v9.md).*
