@@ -1,0 +1,188 @@
+import requests
+from config import SLACK_BOT_TOKEN, SLACK_CHANNEL
+
+SLACK_API_URL = "https://slack.com/api/chat.postMessage"
+
+HEADERS = {
+    "Authorization": f"Bearer {SLACK_BOT_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+
+def format_slack_message(issue: dict) -> dict:
+    """
+    Format a single analyzed issue into a Slack Block Kit message.
+    Includes ✅ Helpful / 👎 Not Helpful feedback buttons in the footer.
+    Button action_ids embed the issue_number so /slack/actions can route them.
+    """
+    analysis    = issue["analysis"]
+    issue_num   = issue["issue_number"]
+    title       = issue["title"]
+    url         = issue["url"]
+    labels      = ", ".join(issue.get("labels", [])) or "none"
+    narrative   = analysis.get("narrative") or analysis.get("root_cause", "N/A")
+    conf        = issue.get("confidence_score")
+    conf_str    = f" | Confidence: {conf:.0%}" if conf is not None else ""
+
+    return {
+        "channel": SLACK_CHANNEL,
+        "blocks": [
+            # Header
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "🚨 HIGH Severity Issue Detected"
+                }
+            },
+            # Issue title + link
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*<{url}|#{issue_num}: {title}>*"
+                }
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*🏷️ Labels*\n{labels}"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*🤖 Scorer*\nhigh{conf_str}"
+                    }
+                ]
+            },
+            {
+                "type": "divider"
+            },
+            # Full narrative from the Reasoner model
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*🔍 Reasoner Analysis*\n{narrative[:2900]}"
+                }
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"AutoBot Sentinel | Apache Airflow | <{url}|View Issue>"
+                    }
+                ]
+            },
+            {
+                "type": "divider"
+            },
+            # ── Feedback buttons ──────────────────────────────────────────────
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "✅ Helpful", "emoji": True},
+                        "style": "primary",
+                        "action_id": f"feedback_positive_{issue_num}",
+                        "value": f"{issue_num}",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "👎 Not Helpful", "emoji": True},
+                        "style": "danger",
+                        "action_id": f"feedback_negative_{issue_num}",
+                        "value": f"{issue_num}",
+                    },
+                ]
+            }
+        ]
+    }
+
+
+def send_slack_message(issue: dict) -> bool:
+    """
+    Send a single issue notification to Slack.
+    Returns True if successful, False otherwise.
+    """
+    payload  = format_slack_message(issue)
+    response = requests.post(SLACK_API_URL, headers=HEADERS, json=payload)
+
+    if response.status_code != 200:
+        print(f"  ❌ Slack API HTTP error: {response.status_code}")
+        return False
+
+    result = response.json()
+    if not result.get("ok"):
+        print(f"  ❌ Slack API error: {result.get('error', 'unknown')}")
+        return False
+
+    return True
+
+
+def run_notifier(analyzed_issues: list[dict]) -> dict:
+    """
+    Send Slack notifications for all analyzed HIGH severity issues.
+    Returns summary of sent/failed counts.
+    """
+    if not analyzed_issues:
+        print("Notifier: no issues to notify.")
+        return {"sent": 0, "failed": 0}
+
+    print(f"\nSending {len(analyzed_issues)} Slack notifications...")
+    print("-" * 50)
+
+    sent   = 0
+    failed = 0
+
+    for issue in analyzed_issues:
+        num   = issue["issue_number"]
+        title = issue["title"][:60]
+        print(f"  Sending #{num}: {title}...")
+
+        # Attempt send with one retry
+        success = send_slack_message(issue)
+
+        if not success:
+            print(f"    Retrying #{num}...")
+            success = send_slack_message(issue)
+
+        if success:
+            print(f"    ✅ Sent")
+            sent += 1
+        else:
+            print(f"    ❌ Failed after retry")
+            failed += 1
+
+    print("-" * 50)
+    print(f"Notifier done: {sent} sent, {failed} failed")
+
+    return {"sent": sent, "failed": failed}
+
+
+# ── Standalone test ──────────────────────────────────────────
+if __name__ == "__main__":
+    print("Running Notifier in test mode...\n")
+
+    test_analyzed = [
+        {
+            "issue_number": 66195,
+            "title": "Warning error formatting crashes the scheduler",
+            "url": "https://github.com/apache/airflow/issues/66195",
+            "labels": ["bug", "scheduler"],
+            "predicted_class": "high",
+            "analysis": {
+                "summary": "The Airflow scheduler crashes due to a formatting error in a warning message related to JWT secret key length.",
+                "root_cause": "The warning generated by the system regarding the JWT secret key length is not properly formatted, causing an unhandled exception.",
+                "suggested_action": "Fix the warning format string in the JWT validation logic to handle variable-length secrets without raising an exception."
+            }
+        }
+    ]
+
+    result = run_notifier(test_analyzed)
+    print(f"\n{'='*50}")
+    print(f"Result: {result}")
+    print("✅ Phase 4 test complete")

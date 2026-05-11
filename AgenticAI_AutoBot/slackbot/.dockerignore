@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+.langgraph_api
+*.db
+*.ipynb
+.env
+logs/
+*.log
+.git
+.gitignore

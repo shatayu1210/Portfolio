@@ -1,0 +1,129 @@
+# AutoBot — Root Docker Compose (VSCode Feature + Full Observability)
+#
+# Services:
+#   Core:        neo4j, sandbox, orchestrator
+#   Observability: loki, promtail, prometheus, grafana
+#
+# Usage:
+#   docker compose up -d
+
+name: autobot
+
+services:
+
+  # ── GraphRAG ─────────────────────────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.18.1
+    container_name: autobot_neo4j
+    ports:
+      - "7474:7474"   # Browser UI
+      - "7687:7687"   # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-autobot_password}
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+    volumes:
+      - ./graphrag/data:/data
+      - ./graphrag/logs:/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7474"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  # ── Patcher Sandbox ───────────────────────────────────────────────────────────
+  sandbox:
+    build:
+      context: ./sandbox
+    container_name: autobot_sandbox
+    ports:
+      - "5001:5001"
+    volumes:
+      - ${AIRFLOW_REPO_PATH:-./tree_sitter/airflow}:/workspace:ro
+    restart: unless-stopped
+
+  # ── LangGraph Orchestrator ────────────────────────────────────────────────────
+  orchestrator:
+    build:
+      context: ./autobot_vscode/local_orchestrator
+    container_name: autobot_orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASS=${NEO4J_PASSWORD:-autobot_password}
+      - SANDBOX_URL=http://sandbox:5001
+      - TS_INDEX_PATH=/app/ts_index.json
+      - AUTOBOT_MODE=${AUTOBOT_MODE:-hf_tgi}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_OWNER=${GITHUB_OWNER:-apache}
+      - GITHUB_REPO=${GITHUB_REPO:-airflow}
+      - HF_TGI_ENDPOINT=${HF_TGI_ENDPOINT}
+      - HF_TGI_TOKEN=${HF_TGI_TOKEN}
+      - HF_PLANNER_ADAPTER=${HF_PLANNER_ADAPTER}
+      - HF_PATCHER_ADAPTER=${HF_PATCHER_ADAPTER}
+      # LangSmith — traces sent automatically when these are set
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - LANGCHAIN_PROJECT=${LANGCHAIN_PROJECT:-autobot-vscode}
+    volumes:
+      - ${AIRFLOW_REPO_PATH:-./tree_sitter/airflow}:/workspace:ro
+      - ./tree_sitter/treesitter_index.json:/app/ts_index.json:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      sandbox:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── Observability: Log Aggregation ────────────────────────────────────────────
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: autobot_loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: autobot_promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./observability/promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # ── Observability: Metrics ────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: autobot_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  # ── Observability: Dashboards ─────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: autobot_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-autobot_grafana}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  grafana_data:
