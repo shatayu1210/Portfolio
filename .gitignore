@@ -265,3 +265,30 @@ slackbot/rlhf/gold_set.json
 
 # RunPod Dockerfile for DPO training job
 slackbot/rlhf/Dockerfile.runpod
+
+# AutoBot Portfolio Exclusions
+AgenticAI_AutoBot/.env
+AgenticAI_AutoBot/logs/
+AgenticAI_AutoBot/.venv/
+AgenticAI_AutoBot/__pycache__/
+AgenticAI_AutoBot/node_modules/
+AgenticAI_AutoBot/*.log
+
+# --- AutoBot Portfolio Cleanliness ---
+AgenticAI_AutoBot/.env
+AgenticAI_AutoBot/logs/
+AgenticAI_AutoBot/scratch/
+
+# Python recursive cleanup
+AgenticAI_AutoBot/**/.venv/
+AgenticAI_AutoBot/**/__pycache__/
+AgenticAI_AutoBot/**/*.pyc
+
+# VSCode Extension cleanup
+AgenticAI_AutoBot/autobot_vscode/out/
+AgenticAI_AutoBot/autobot_vscode/node_modules/
+AgenticAI_AutoBot/autobot_vscode/.vscode-test/
+
+# OS/Logs cleanup
+AgenticAI_AutoBot/**/*.log
+.DS_Store
