@@ -71,6 +71,7 @@ services:
     volumes:
       - ${AIRFLOW_REPO_PATH:-./tree_sitter/airflow}:/workspace:ro
       - ./tree_sitter/treesitter_index.json:/app/ts_index.json:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       neo4j:
         condition: service_healthy

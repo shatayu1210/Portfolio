@@ -168,3 +168,22 @@ def linked_prs_for_issues(issue_numbers: list[int]) -> list[dict]:
             return [dict(r) for r in result]
     except Exception:
         return []
+
+
+def execute_cypher(query: str, limit: int = 20) -> list[dict]:
+    """Execute a raw Cypher query against the Neo4j database (Read-Only)."""
+    if not neo4j_available():
+        return [{"error": "Neo4j is currently unreachable."}]
+    # Very basic read-only guardrail
+    if any(kw in query.upper() for kw in ["CREATE", "MERGE", "SET", "DELETE", "REMOVE", "DROP", "CALL db."]):
+        return [{"error": "Write operations are not permitted via this tool. Use read-only queries."}]
+    try:
+        # Enforce limit if not explicitly defined by LLM
+        if "LIMIT" not in query.upper():
+            query += f" LIMIT {limit}"
+        
+        with _get_driver().session(default_access_mode="READ") as s:
+            result = s.run(query)
+            return [dict(r) for r in result]
+    except Exception as e:
+        return [{"error": f"Cypher execution failed: {str(e)}"}]

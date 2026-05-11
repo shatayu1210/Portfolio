@@ -69,17 +69,25 @@
     vscode.postMessage({ type: "pickFolder" });
   });
 
-  // ── Auto-resize textarea ──────────────────────────────────
+  // ── Auto-resize textarea & button toggle ──────────────────
   inputEl.addEventListener("input", () => {
     inputEl.style.height = "auto";
     inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+
+    if (inputEl.value.trim() === "" || isBusy) {
+      sendBtn.disabled = true;
+    } else {
+      sendBtn.disabled = false;
+    }
   });
 
   // ── Send on Enter (Shift+Enter = newline) ─────────────────
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (!sendBtn.disabled) {
+        handleSend();
+      }
     }
   });
 
@@ -88,16 +96,16 @@
   // ── Parse intent via LLM (with regex fallback) ────────────────
   async function parseIntent(text) {
     text = text.trim();
-    
+
     // Attempt LLM-based intent detection
     try {
       const result = await callOrchestrate({ command: "detect_intent", text });
       if (result && result.intent) {
-        return { 
-          intent: result.intent, 
-          issueNum: result.issue_number ? parseInt(result.issue_number) : null, 
+        return {
+          intent: result.intent,
+          issueNum: result.issue_number ? parseInt(result.issue_number) : null,
           prNum: result.pr_number ? parseInt(result.pr_number) : null,
-          text 
+          text
         };
       }
     } catch (e) {
@@ -143,7 +151,6 @@
   let currentTimerInterval = null;
 
   async function handleSend() {
-    // If it's currently busy, this is a STOP action
     if (isBusy) {
       if (currentAbortController) {
         currentAbortController.abort();
@@ -158,9 +165,10 @@
     inputEl.value = "";
     inputEl.style.height = "auto";
     inputEl.disabled = true; // Disable textbox
+    sendBtn.disabled = true;
     removeWelcome();
     appendUserMessage(raw);
-    
+
     // Switch to STOP mode
     setBusy(true);
     sendBtn.innerHTML = "⏹";
@@ -170,7 +178,7 @@
     const signal = currentAbortController.signal;
 
     const repo = repoInput.value.trim();
-    
+
     // Add a fast initial loading state for intent detection
     const agentEl = appendAgentBubble();
     const timerEl = agentEl.querySelector(".ab-timer");
@@ -197,13 +205,13 @@
       resetInput();
       return;
     }
-    
+
     markStepDone(initStep);
     const { intent, issueNum, prNum, text } = parsed;
 
     try {
       if (signal.aborted) throw new Error("Aborted by user");
-      
+
       if (intent === "ask_issue") {
         if (!issueNum) {
           agentEl.querySelector(".ab-bubble").appendChild(textNode("⚠️ Please include a valid issue number in your message, e.g. `Show issue #45123`."));
@@ -258,6 +266,9 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
     inputEl.disabled = false;
     sendBtn.innerHTML = "➤";
     sendBtn.classList.remove("ab-btn-stop");
+    if (inputEl.value.trim() !== "") {
+      sendBtn.disabled = false;
+    }
     inputEl.focus();
     scrollToBottom();
   }
@@ -266,7 +277,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
   async function doQuery(text, agentEl, signal) {
     const bubble = agentEl.querySelector(".ab-bubble");
     const stepsEl = appendStepsContainer(agentEl);
-    
+
     let currentStep = null;
     scrollToBottom();
 
@@ -289,18 +300,18 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
-        
+
         // Parse SSE lines
         const lines = buffer.split("\n\n");
         buffer = lines.pop(); // Keep incomplete chunk in buffer
-        
+
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const dataStr = line.slice(6);
             const data = JSON.parse(dataStr);
-            
+
             if (data.type === "step") {
               if (currentStep) markStepDone(currentStep);
               currentStep = addStep(stepsEl, data.msg);
@@ -338,7 +349,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
 
     const result = await callOrchestrate({ command: "ask_issue", issue_number: n });
     if (signal.aborted) throw new Error("Aborted by user");
-    
+
     markStepDone(s1);
 
     const body = renderIssueCard(result);
@@ -353,7 +364,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
 
     const result = await callOrchestrate({ command: "ask_pr", pr_number: n });
     if (signal.aborted) throw new Error("Aborted by user");
-    
+
     markStepDone(s1);
 
     const body = renderPrCard(result);
@@ -397,23 +408,23 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n\n");
         buffer = lines.pop();
-        
+
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             const dataStr = line.slice(6);
             const data = JSON.parse(dataStr);
-            
+
             if (data.type === "step") {
               if (currentStep) markStepDone(currentStep);
               currentStep = addStep(stepsEl, data.msg);
               scrollToBottom();
             } else if (data.type === "plan_done") {
               if (currentStep) markStepDone(currentStep);
-              
+
               lastPlan = data;
               const planCard = renderPlanCard(data, n);
               agentEl.querySelector(".ab-bubble").appendChild(planCard);
@@ -461,16 +472,16 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
     if (result.status === "stopped_at_planner" || result.status === "context_assembled") {
       markStepDone(s3);
       agentEl.querySelector(".ab-bubble").appendChild(textNode("🛑 " + (result.note || "Stopped at planner.")));
-      
+
       const payloadWrap = el("div", "ab-diff-wrap");
       const label = el("div", "ab-diff-label");
       label.textContent = "ASSEMBLED PATCHER CONTEXT (JSON)";
       payloadWrap.appendChild(label);
-      
+
       const pre = el("pre", "ab-diff");
       pre.textContent = JSON.stringify(result.patcher_input, null, 2);
       payloadWrap.appendChild(pre);
-      
+
       agentEl.querySelector(".ab-bubble").appendChild(payloadWrap);
       scrollToBottom();
       return;
@@ -479,10 +490,10 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
     if (result.status === "stopped_at_patcher") {
       markStepDone(s3);
       agentEl.querySelector(".ab-bubble").appendChild(textNode("🛑 " + (result.note || "Stopped at patcher.")));
-      
+
       const diffCard = renderDiffCard({ diff: result.generated_diff, verdict: "STOPPED", reasoning: "Stopped before Critic." }, n);
       agentEl.querySelector(".ab-bubble").appendChild(diffCard);
-      
+
       const payloadWrap = el("div", "ab-diff-wrap");
       const label = el("div", "ab-diff-label");
       label.textContent = "MOCK CRITIC INPUT (JSON)";
@@ -490,7 +501,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
       const pre = el("pre", "ab-diff");
       pre.textContent = JSON.stringify(result.critic_input, null, 2);
       payloadWrap.appendChild(pre);
-      
+
       agentEl.querySelector(".ab-bubble").appendChild(payloadWrap);
       scrollToBottom();
       return;
@@ -537,7 +548,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
   // ── UI renderers ──────────────────────────────────────────
 
   function escapeHtml(unsafe) {
-    return (unsafe || "").replace(/[&<"']/g, function(m) {
+    return (unsafe || "").replace(/[&<"']/g, function (m) {
       switch (m) {
         case '&': return '&amp;';
         case '<': return '&lt;';
@@ -551,7 +562,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
   function renderIssueCard(data) {
     const wrap = el("div", "ab-card");
     const state = (data.state || "open").toLowerCase();
-    
+
     // Header (always visible)
     const header = el("div", "ab-card-header");
     header.innerHTML = `
@@ -569,7 +580,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
 
     // Body (collapsible)
     const bodyEl = el("div", "ab-card-body");
-    
+
     const desc = el("div", "ab-card-desc");
     if (data.body && data.body.length > 400) {
       desc.innerHTML = escapeHtml(data.body.slice(0, 400)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more</a>`;
@@ -581,7 +592,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
     const meta = el("div", "ab-card-meta");
 
     let openedOn = data.created_at || data.createdAt || data.date;
-    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown (missing)";
+    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }) : "Unknown (missing)";
     let relativeStr = openedOn ? ` (${formatTimeDelta(openedOn)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
 
@@ -603,7 +614,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
   function renderPrCard(data) {
     const wrap = el("div", "ab-card");
     let state = data.merged ? "merged" : (data.state || "open").toLowerCase();
-    
+
     // Header (always visible)
     const header = el("div", "ab-card-header");
     const prNum = data.pr_number || data.number;
@@ -622,7 +633,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
 
     // Body (collapsible)
     const bodyEl = el("div", "ab-card-body");
-    
+
     const desc = el("div", "ab-card-desc");
     if (data.body && data.body.length > 400) {
       desc.innerHTML = escapeHtml(data.body.slice(0, 400)) + `... <a href="${data.html_url || "#"}" target="_blank" style="color:var(--vscode-textLink-foreground); text-decoration:none;">View more</a>`;
@@ -634,7 +645,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
     const meta = el("div", "ab-card-meta");
 
     let openedOn = data.created_at || data.createdAt || data.date;
-    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", {month:"2-digit", day:"2-digit", year:"2-digit"}) : "Unknown (missing)";
+    let openDateStr = openedOn ? new Date(openedOn).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" }) : "Unknown (missing)";
     let relativeStr = openedOn ? ` (${formatTimeDelta(openedOn)})` : "";
     let assigneeStr = (data.assignee && data.assignee.login) ? data.assignee.login : "Nobody";
     let reviewsCount = data.reviews !== undefined ? data.reviews : 0;

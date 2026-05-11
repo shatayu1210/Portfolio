@@ -8,6 +8,16 @@ from typing import TypedDict, List, Dict, Any, Optional
 from pathlib import Path
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
+from prometheus_client import Counter, Histogram, Gauge
+
+# ── Custom AutoBot Metrics ────────────────────────────────────────────────────
+PLAN_REQUESTS = Counter("autobot_plan_requests_total", "Total planning requests started")
+PLAN_SUCCESS = Counter("autobot_plan_success_total", "Total plans successfully created")
+PATCH_ATTEMPTS = Counter("autobot_patch_attempts_total", "Total patch generation attempts in sandbox")
+PATCH_SUCCESS = Counter("autobot_patch_success_total", "Total patches that passed sandbox validation")
+PATCH_FAILURE = Counter("autobot_patch_failure_total", "Total patches that failed sandbox validation", ["reason"])
+REFINEMENT_ITERATIONS = Histogram("autobot_refinement_iterations", "Number of refinement iterations used", buckets=[1, 2, 3, 4, 5])
+GRAPH_RAG_HITS = Gauge("autobot_graphrag_candidates_count", "Number of GraphRAG candidates found for the current issue")
 
 # Import TGI metadata reader — only available when AUTOBOT_MODE=hf_tgi
 try:
@@ -134,8 +144,10 @@ function_registry: Dict[int, Dict[str, Any]] = {}
 # ──────────────────────────────────────────────────────────────────────────────
 def orchestrator_node(state: AgentState) -> AgentState:
     print(f"[LangGraph] Orchestrator: Initializing for issue #{state['issue_number']}")
+    PLAN_REQUESTS.inc()
     if neo4j_available():
         candidates = get_candidate_files(state['issue_number'], top_k=6)
+        GRAPH_RAG_HITS.set(len(candidates))
     else:
         candidates = []
 
@@ -205,10 +217,25 @@ def planner_node(state: AgentState) -> AgentState:
             backend=state['backend_label'],
         )
 
+        # ── Blast Radius Containment Guardrail ───────────────────────────────────
+        if len(plan.files) > 3:
+            return {
+                **state,
+                "error": f"Guardrail Blocked: The plan requires modifying {len(plan.files)} files. Autonomous patching is restricted to a maximum of 3 files to contain blast radius.",
+                "status": "failed"
+            }
+
+        # ── Confidence HITL Guardrail ────────────────────────────────────────────
+        summary_prefix = ""
+        if getattr(trace, 'final_confidence', 1.0) < 0.8:
+            summary_prefix = f"⚠️ [HITL GUARDRAIL] Low confidence ({getattr(trace, 'final_confidence', 0)}). Please review this plan carefully before executing.\n\n"
+
+        PLAN_SUCCESS.inc()
+        REFINEMENT_ITERATIONS.observe(trace.iterations + 1)
         return {
             **state,
             "plan": {
-                "summary": plan.summary,
+                "summary": summary_prefix + plan.summary,
                 "files": plan.files,
                 "steps": plan.steps,
                 "code_spans": plan.code_spans,
@@ -623,6 +650,7 @@ def sandbox_node(state: AgentState) -> AgentState:
 
     sandbox_result = {}
     temp_patch = None
+    PATCH_ATTEMPTS.inc()
     try:
         # 1. Clean container to pristine state
         subprocess.run(["docker", "exec", "-w", container_cwd, container_name, "git", "restore", "."], capture_output=True)
@@ -644,6 +672,7 @@ def sandbox_node(state: AgentState) -> AgentState:
                 "status": "failed",
                 "output": f"Patch application failed:\n{apply_res.stderr}\n{apply_res.stdout}"
             }
+            PATCH_FAILURE.labels(reason="patch_apply_failed").inc()
         else:
             # 4. Validate the patch — multi-strategy depending on file type
             patched_files = state.get("plan", {}).get("files", [])
@@ -675,6 +704,7 @@ def sandbox_node(state: AgentState) -> AgentState:
                 if tsc_res.returncode != 0:
                     all_passed = False
                     print(f"[Sandbox] ❌ TypeScript type check FAILED (exit {tsc_res.returncode})")
+                    PATCH_FAILURE.labels(reason="typescript_failed").inc()
                 else:
                     print(f"[Sandbox] ✓ TypeScript type check passed")
 
@@ -698,6 +728,7 @@ def sandbox_node(state: AgentState) -> AgentState:
                     if lint_res.returncode != 0:
                         all_passed = False
                         print(f"[Sandbox] ❌ ESLint FAILED for {ts_file}")
+                        PATCH_FAILURE.labels(reason="eslint_failed").inc()
                     else:
                         print(f"[Sandbox] ✓ ESLint passed for {ts_file}")
 
@@ -724,6 +755,7 @@ def sandbox_node(state: AgentState) -> AgentState:
                     if res.returncode != 0:
                         all_passed = False
                         print(f"[Sandbox] ❌ Tests FAILED: {tf}")
+                        PATCH_FAILURE.labels(reason="test_failed").inc()
                     else:
                         print(f"[Sandbox] ✓ Tests passed: {tf}")
 
@@ -744,9 +776,10 @@ def sandbox_node(state: AgentState) -> AgentState:
             full_output = "\n\n".join(validation_outputs)
             if all_passed:
                 sandbox_result = {
-                    "status": "passed",
-                    "output": f"All validations passed!\n{full_output}"
+                    "status": "success",
+                    "output": "Validation passed."
                 }
+                PATCH_SUCCESS.inc()
             else:
                 sandbox_result = {
                     "status": "failed",
@@ -807,7 +840,7 @@ def route_after_sandbox(state: AgentState) -> str:
     """
     Diagnostic Router: decides what to do after a Sandbox run.
 
-    - sandbox passed          → end
+    - sandbox passed          → logical_critic (verify intent)
     - error on any kind       → end (safety)
     - max iterations reached  → end
     - patcher-class error     → critic  (Chain of Debate before retry)
@@ -817,7 +850,7 @@ def route_after_sandbox(state: AgentState) -> str:
         return "end"
 
     if state["status"] == "sandbox_completed":
-        return "end"
+        return "logical_critic"
 
     if state.get("iterations", 0) >= MAX_PATCHER_ITERATIONS:
         print(f"[LangGraph] Router: Max iterations ({MAX_PATCHER_ITERATIONS}) reached → end")
@@ -856,6 +889,61 @@ def route_after_critic(state: AgentState) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Logical Critic Node
+# ──────────────────────────────────────────────────────────────────────────────
+def logical_critic_node(state: AgentState) -> AgentState:
+    print("[LangGraph] Sandbox passed. Running Logical Critic to verify intent.")
+    critic_fn = state.get("critic_fn")
+    patch = state.get("patch", "")
+    
+    if not critic_fn:
+        return {**state, "status": "passed"} # fallback
+
+    logical_critic_sys = (
+        "You are an expert Code Reviewer. The patch has passed all syntax and test checks. "
+        "Your ONLY job now is to verify if the patch logically resolves the ORIGINAL ISSUE. "
+        "Respond ONLY with a JSON object: "
+        '{"verdict": "ACCEPT", "feedback": "<reason>"} OR {"verdict": "REJECT", "feedback": "<reason>"}'
+        "\nUse ACCEPT if the code logically solves the issue. Use REJECT if it misses the point."
+    )
+    
+    logical_critic_user = (
+        f"ISSUE TITLE: {state.get('title', '')}\n"
+        f"ISSUE BODY: {state.get('body', '')}\n\n"
+        f"APPLIED PATCH:\n{patch[:5000]}\n\n"
+        "Does this patch logically resolve the issue?"
+    )
+
+    try:
+        raw = critic_fn(logical_critic_sys, logical_critic_user)
+        verdict = "ACCEPT"
+        feedback = raw
+        m_v = re.search(r'"verdict"\s*:\s*"(ACCEPT|REJECT)"', raw, re.IGNORECASE)
+        if m_v: verdict = m_v.group(1).upper()
+        
+        print(f"[LangGraph] Logical Critic verdict: {verdict}")
+        
+        if verdict == "REJECT":
+            return {
+                **state,
+                "critic_verdict": "REJECT",
+                "critic_feedback": f"Logical Critic: {feedback}",
+                "status": "sandbox_failed", 
+                "sandbox_error_class": "escalate_planner" # Logical errors mean the plan missed the mark
+            }
+        else:
+            return {**state, "status": "passed"}
+    except Exception as e:
+        print(f"[LangGraph] Logical critic failed: {e}")
+        return {**state, "status": "passed"}
+
+def route_after_logical_critic(state: AgentState) -> str:
+    if state["status"] == "passed":
+        return "end"
+    return "escalate_planner"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Planner Graph Definition
 # ──────────────────────────────────────────────────────────────────────────────
 planner_workflow = StateGraph(AgentState)
@@ -891,8 +979,19 @@ patcher_workflow.add_conditional_edges(
     {
         "end": END,
         "critic": "critic",
+        "logical_critic": "logical_critic",
         "retry_patcher": "patcher",
         "escalate_planner": END,   # Surface to caller; re-plan is triggered in app.py
+    }
+)
+
+patcher_workflow.add_node("logical_critic", logical_critic_node)
+patcher_workflow.add_conditional_edges(
+    "logical_critic",
+    route_after_logical_critic,
+    {
+        "end": END,
+        "escalate_planner": END,
     }
 )
 

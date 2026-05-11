@@ -188,9 +188,9 @@ export class PlannerPanelProvider implements vscode.WebviewViewProvider {
     <textarea
       id="ab-input"
       rows="1"
-      placeholder="Fix issue #45123 / check issue #100…  (Enter to send)"
+      placeholder="Ask a question or request a fix (e.g. 'Status of PR 1234' or 'Fix issue #999')..."
     ></textarea>
-    <button id="ab-send" title="Send">➤</button>
+    <button id="ab-send" title="Send" disabled>➤</button>
   </div>
 
   <script nonce="${nonce}" src="${scriptUri}"></script>

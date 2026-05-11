@@ -387,7 +387,7 @@ def research_loop(
 
     # Step 1: Keyword grep — fires on sparse/missing files, critic override, or novel issue
     matches: list[dict] = []
-    if "sparse_files" in triggers or "path_not_found" in triggers or "critic_override" in triggers or is_novel:
+    if "sparse_files" in triggers or "path_not_found" in triggers or "critic_override" in triggers or "no_code_change_flagged" in triggers or is_novel:
         matches = keyword_search(repo_path, keywords, top_k=10)
         for m in matches:
             snippets.append(f"KEYWORD_MATCH {m['file']}:{m['line']}\n{m['snippet']}")
@@ -725,9 +725,13 @@ def run_planner_with_refinement(
             break
 
         if critic_decision == "APPROVED" and confidence < CONFIDENCE_THRESHOLD:
-            # Critic approves but structural score is low — trust the Critic, exit
-            _log_step("Critic approved. Accepting plan despite low evidence strength.")
-            break
+            # Critic approves but structural score is low
+            if iteration == 0 and ("no_code_change_flagged" in triggers or not graphrag_candidates):
+                _log_step("Critic approved, but plan lacks evidence/novel issue. Forcing research.")
+                critic_decision = "REJECTED"
+            else:
+                _log_step("Critic approved. Accepting plan despite low evidence strength.")
+                break
 
         # Critic rejected — update search terms if Critic steered us
         if critic_new_terms:

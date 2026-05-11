@@ -416,6 +416,24 @@ def fetch_github_issue(issue_number: int) -> dict[str, Any] | None:
         "note": f"live GitHub issue from {GITHUB_OWNER}/{GITHUB_REPO}",
     }
 
+def resolve_repo(path: str) -> str:
+    """
+    Helper to resolve repo_path. If the provided path doesn't exist
+    (common when running in Docker with a host path), fallback to /workspace.
+    """
+    if not path:
+        return ""
+    p = Path(path).expanduser()
+    if p.is_dir():
+        return str(p)
+    
+    # Docker fallback
+    ws = Path("/workspace")
+    if ws.is_dir():
+        return "/workspace"
+    
+    return str(p)
+
 
 def collect_repo_files(repo_root: str, max_files: int = 280) -> list[str]:
     root = Path(repo_root).expanduser().resolve()
@@ -473,18 +491,29 @@ def build_repo_context(repo_path: str) -> str:
 
 
 def stub_ask_issue(issue_number: int) -> dict[str, Any]:
+    if not GITHUB_TOKEN:
+        return {
+            "issue_number": issue_number,
+            "title": f"[STUB] Issue #{issue_number}",
+            "body": "Stub issue — set GITHUB_TOKEN + GITHUB_OWNER/GITHUB_REPO for live GitHub data.",
+            "state": "open",
+            "html_url": f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/issues/{issue_number}",
+        }
     gh = fetch_github_issue(issue_number)
     if gh:
         return gh
-    return {
-        "issue_number": issue_number,
-        "title": f"[STUB] Issue #{issue_number}",
-        "body": "Stub issue — set GITHUB_TOKEN + GITHUB_OWNER/GITHUB_REPO for live GitHub data.",
-        "state": "open",
-        "html_url": f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/issues/{issue_number}",
-    }
+    return {"error": f"Issue #{issue_number} could not be found on GitHub."}
 
 def stub_ask_pr(pr_number: int) -> dict[str, Any]:
+    if not GITHUB_TOKEN:
+        return {
+            "pr_number": pr_number,
+            "title": f"[STUB] PR #{pr_number}",
+            "body": "Stub PR — set GITHUB_TOKEN + GITHUB_OWNER/GITHUB_REPO for live GitHub data.",
+            "state": "open",
+            "reviews": 0,
+            "html_url": f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/pull/{pr_number}",
+        }
     gh = gh_get_pr(pr_number)
     if gh:
         reviews = gh_get_pr_reviews(pr_number)
@@ -502,14 +531,7 @@ def stub_ask_pr(pr_number: int) -> dict[str, Any]:
             "reviews": len(reviews) if isinstance(reviews, list) else 0,
             "note": f"live GitHub PR from {GITHUB_OWNER}/{GITHUB_REPO}",
         }
-    return {
-        "pr_number": pr_number,
-        "title": f"[STUB] PR #{pr_number}",
-        "body": "Stub PR — set GITHUB_TOKEN + GITHUB_OWNER/GITHUB_REPO for live GitHub data.",
-        "state": "open",
-        "reviews": 0,
-        "html_url": f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/pull/{pr_number}",
-    }
+    return {"error": f"Pull Request #{pr_number} could not be found on GitHub."}
 
 
 def stub_plan(issue_number: int, repo_path: str) -> dict[str, Any]:
@@ -981,7 +1003,7 @@ GITHUB_TOOLS: dict[str, tuple[Any, str]] = {
 
 # Add GraphRAG tools if neo4j is available
 try:
-    from graphrag_client import similar_issues, linked_prs_for_issues, neo4j_available as _neo4j_ok
+    from graphrag_client import similar_issues, linked_prs_for_issues, execute_cypher, neo4j_available as _neo4j_ok
 
     if _neo4j_ok():
         GITHUB_TOOLS["graphrag_similar_issues"] = (
@@ -991,6 +1013,10 @@ try:
         GITHUB_TOOLS["graphrag_linked_prs"] = (
             lambda issue_numbers: linked_prs_for_issues([int(n) for n in issue_numbers]),
             "Find PRs linked to a list of issue numbers in the graph. Args: issue_numbers (list[int])",
+        )
+        GITHUB_TOOLS["graphrag_execute_cypher"] = (
+            lambda query: execute_cypher(str(query)),
+            "Execute a raw Cypher query against the Neo4j GitHub knowledge graph. Node Labels: Issue, PR, File, User. Relationships: LINKED_PR, TOUCHES, AUTHORED_BY, REVIEWED_BY. Args: query (str)",
         )
 except ImportError:
     pass  # neo4j driver not installed — skip GraphRAG tools
@@ -1005,6 +1031,9 @@ _GRAPHRAG_KEYWORDS = [
     "average resolution", "which files do they", "files usually modified",
     "files modified in similar", "prs that fixed", "prs linked to",
     "neighbour", "neighbor", "historically",
+    # Added keywords to catch complex multi-hop queries
+    "which pull requests touch", "author", "reviewed by", "graphrag",
+    "directory", "touch the", "touched by"
 ]
 
 _LIVE_ONLY_KEYWORDS = [
@@ -1071,12 +1100,16 @@ async def llm_adhoc_query_stream(chat_fn: Callable[[str, str], str], user_query:
     relevance = relevance.strip().upper()
     
     if "NO" in relevance and "YES" not in relevance:
-        ans = (
-            "I am AutoBot, an assistant dedicated to the Apache Airflow repository. "
-            "I can help with GitHub issues, PRs, CI status, code reviews, and repository queries. "
-            "I'm unable to assist with questions outside this scope."
+        refusal_system = (
+            "You are AutoBot, an assistant dedicated strictly to the Apache Airflow repository. "
+            "The user's input was out of scope. "
+            "If they simply said hello or greeted you, warmly greet them back. "
+            "If they asked an unrelated question, politely and creatively decline to answer it. "
+            "In either case, concisely remind them that you are here to help with Airflow GitHub issues, PRs, or codebase queries. "
+            "Keep it under 3 sentences."
         )
-        yield yield_event("done", {"answer": ans, "tools_called": [], "guardrail_blocked": True})
+        ans = await asyncio.to_thread(chat_fn, refusal_system, f"User question: {user_query}")
+        yield yield_event("done", {"answer": ans.strip(), "tools_called": [], "guardrail_blocked": True})
         return
 
     # Pass 1: Plan — filter tools based on query classification
@@ -1109,7 +1142,11 @@ async def llm_adhoc_query_stream(chat_fn: Callable[[str, str], str], user_query:
     )
     raw_plan = await asyncio.to_thread(chat_fn, plan_system, user_query)
 
-    plan_data = extract_json_object(raw_plan)
+    try:
+        plan_data = extract_json_object(raw_plan)
+    except ValueError as e:
+        yield yield_event("error", {"msg": "Agent returned invalid JSON. Please rephrase the query or provide more context."})
+        return
     calls = plan_data.get("calls", [])
     if not isinstance(calls, list):
         calls = []
@@ -1179,12 +1216,19 @@ async def llm_plan_patch_stream(chat_fn: Callable[[str, str], str], n, repo, bac
 
     try:
         n_int = int(n)
+        if n_int <= 0: raise ValueError
     except (TypeError, ValueError):
-        yield yield_event("error", {"msg": "invalid issue_number"})
+        yield yield_event("error", {"msg": "Invalid issue_number provided. Please provide a valid numeric ID."})
+        return
+        
+    # Guardrail: Check if the issue actually exists before streaming the planner
+    if GITHUB_TOKEN and not fetch_github_issue(n_int):
+        yield yield_event("error", {"msg": f"Guardrail Blocked: Issue #{n_int} could not be found on GitHub."})
         return
     
-    if not repo or not Path(repo).expanduser().is_dir():
-        yield yield_event("error", {"msg": "invalid repo_path"})
+    repo = resolve_repo(repo)
+    if not repo or not Path(repo).is_dir():
+        yield yield_event("error", {"msg": f"invalid repo_path: {repo}"})
         return
 
     q = asyncio.Queue()
@@ -1285,12 +1329,17 @@ def llm_adhoc_query(chat_fn: Callable[[str, str], str], user_query: str) -> dict
     # Pass 0: Soft guardrail
     relevance = chat_fn(GUARDRAIL_PROMPT, user_query).strip().upper()
     if "NO" in relevance and "YES" not in relevance:
+        refusal_system = (
+            "You are AutoBot, an assistant dedicated strictly to the Apache Airflow repository. "
+            "The user's input was out of scope. "
+            "If they simply said hello or greeted you, warmly greet them back. "
+            "If they asked an unrelated question, politely and creatively decline to answer it. "
+            "In either case, concisely remind them that you are here to help with Airflow GitHub issues, PRs, or codebase queries. "
+            "Keep it under 3 sentences."
+        )
+        ans = chat_fn(refusal_system, f"User question: {user_query}")
         return {
-            "answer": (
-                "I am AutoBot, an assistant dedicated to the Apache Airflow repository. "
-                "I can help with GitHub issues, PRs, CI status, code reviews, and repository queries. "
-                "I'm unable to assist with questions outside this scope."
-            ),
+            "answer": ans.strip(),
             "tools_called": [],
             "guardrail_blocked": True,
         }
@@ -1345,7 +1394,7 @@ def llm_adhoc_query(chat_fn: Callable[[str, str], str], user_query: str) -> dict
             except Exception as e:
                 tool_results.append(f"[{tool_name}] → ERROR: {e}")
                 tools_called.append(f"{tool_name}(error)")
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError, ValueError):
         tool_results.append(f"[raw_plan] Could not parse tool plan: {raw_plan[:500]}")
 
     # Pass 2: LLM summarizes tool results into a user-facing answer
@@ -1429,23 +1478,40 @@ async def orchestrate(request: Request):
 
 
     if command == "ask_issue":
-        n = int(data.get("issue_number") or 0)
-        return stub_ask_issue(n)
+        try:
+            n = int(data.get("issue_number"))
+            if n <= 0: raise ValueError
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "Invalid issue_number provided. Please provide a valid numeric ID."}, status_code=400)
+        res = stub_ask_issue(n)
+        if "error" in res:
+            return JSONResponse({"error": res["error"]}, status_code=404)
+        return res
 
     if command == "ask_pr":
-        n = int(data.get("pr_number") or 0)
-        return stub_ask_pr(n)
+        try:
+            n = int(data.get("pr_number"))
+            if n <= 0: raise ValueError
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "Invalid pr_number provided. Please provide a valid numeric ID."}, status_code=400)
+        res = stub_ask_pr(n)
+        if "error" in res:
+            return JSONResponse({"error": res["error"]}, status_code=404)
+        return res
 
     if command == "plan_patch":
-        n = data.get("issue_number")
         repo = str(data.get("repo_path") or "").strip()
         try:
-            n_int = int(n)
+            n_int = int(data.get("issue_number"))
+            if n_int <= 0: raise ValueError
         except (TypeError, ValueError):
-            return JSONResponse({"error": "invalid issue_number"}, status_code=400)
-        if not repo:
-            return JSONResponse({"error": "repo_path is required (set local Airflow clone path)"}, status_code=400)
-        if not Path(repo).expanduser().is_dir():
+            return JSONResponse({"error": "Invalid issue_number provided. Please provide a valid numeric ID."}, status_code=400)
+        
+        # Guardrail: Check if the issue actually exists before attempting a plan
+        if GITHUB_TOKEN and not fetch_github_issue(n_int):
+            return JSONResponse({"error": f"Guardrail Blocked: Issue #{n_int} could not be found on GitHub."}, status_code=404)
+        repo = resolve_repo(repo)
+        if not repo or not Path(repo).is_dir():
             return JSONResponse({"error": f"repo_path is not a directory: {repo}"}, status_code=400)
 
         title, body = _issue_title_body(n_int)
@@ -1545,7 +1611,8 @@ async def orchestrate(request: Request):
             n_int = int(n)
         except (TypeError, ValueError):
             return JSONResponse({"error": "invalid issue_number"}, status_code=400)
-        if not repo or not Path(repo).expanduser().is_dir():
+        repo = resolve_repo(repo)
+        if not repo or not Path(repo).is_dir():
             return JSONResponse({"error": f"repo_path required: {repo}"}, status_code=400)
 
         title, body = _issue_title_body(n_int)
@@ -1772,7 +1839,8 @@ async def orchestrate(request: Request):
         if use_hf_tgi:
             try:
                 n_int = int(issue_number) if issue_number is not None else 0
-                if not repo or not Path(repo).expanduser().is_dir():
+                repo = resolve_repo(repo)
+                if not repo or not Path(repo).is_dir():
                     return JSONResponse({"error": f"repo_path required for hf_tgi patcher: {repo!r}"}, status_code=400)
 
                 patcher_fn = hf_tgi_patcher_chat(HF_PATCHER_ADAPTER) if HF_PATCHER_ADAPTER else None
