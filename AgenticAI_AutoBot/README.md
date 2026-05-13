@@ -7,6 +7,33 @@ This repository contains the end-to-end AutoBot pipeline for:
 - running model evaluation notebooks, and
 - serving predictions in Slack.
 
+## System Architecture & Overview
+
+AutoBot is an agentic AI ecosystem designed to streamline open-source maintenance for high-scale repositories like Apache Airflow. By combining **GraphRAG-based reasoning** with a **temporal bottleneck detection engine**, AutoBot can autonomously identify engineering stalls, plan architectural fixes, and execute code patches within a sandboxed environment.
+
+### Project Walkthrough
+
+![System Overview](docs/images/AutoBot%201.jpg)
+*System Overview and High-level Architecture*
+
+![Data Pipeline](docs/images/AutoBot%202.jpg)
+*Temporal Snapshotting & ETL Pipeline*
+
+![Risk Scoring](docs/images/AutoBot%203.jpg)
+*Hybrid Deterministic + AI Risk Scoring*
+
+![GraphRAG Ingestion](docs/images/AutoBot%204.jpg)
+*Neo4j Graph Construction and Relationship Mapping*
+
+![Orchestration Loop](docs/images/AutoBot%205.jpg)
+*Agentic Planning & ReAct Tool Loop*
+
+![VS Code Integration](docs/images/AutoBot%206.jpg)
+*Seamless Extension UI for Repository Analysis*
+
+![Predictive Analytics](docs/images/AutoBot%207.jpg)
+*Bottleneck Prediction & Dashboard Reporting*
+
 ## What This Repo Contains
 
 | Path | Purpose | Typical use |
