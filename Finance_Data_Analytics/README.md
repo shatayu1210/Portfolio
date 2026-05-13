@@ -39,12 +39,16 @@ Comprehensive view of stock performance, comparing historical data with ML-gener
 ![Dashboard](./Dashboard.jpg)
 
 ### 📈 Technical Analysis
-Detailed breakdown of market momentum and volatility indicators.
+Detailed breakdown of market momentum, volatility, and stability indicators.
 
-| Bollinger Bands | On-Balance Volume (OBV) |
+#### Bollinger Bands (Volatility)
+| ![Bollinger 1](./Bollinger1.jpg) | ![Bollinger 2](./Bollinger2.jpg) |
 | :---: | :---: |
-| ![Bollinger 1](./Bollinger1.jpg) | ![OBV](./Obv.jpg) |
-| ![Bollinger 2](./Bollinger2.jpg) | ![FSI](./FSI.jpg) |
+
+#### Market Momentum & Stability
+| On-Balance Volume (OBV) | Financial Stability Index (FSI) |
+| :---: | :---: |
+| ![OBV](./Obv.jpg) | ![FSI](./FSI.jpg) |
 
 ---
 
