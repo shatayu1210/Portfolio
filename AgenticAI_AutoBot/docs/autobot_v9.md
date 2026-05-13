@@ -40,31 +40,116 @@ The `tree_sitter/` directory contains the build script (`build_treesitter_index.
 
 ## 3. GraphRAG — Neo4j Knowledge Graph
 
-### 3.1 Structure
+### 3.1 Graph Schema
 
-The GraphRAG layer lives in `graphrag/`. The Neo4j database (Neo4j 5.18.1) stores two node types and one relationship type:
+The GraphRAG layer lives in `graphrag/`. The Neo4j database (Neo4j 5.18.1) holds a rich multi-hop knowledge graph covering every issue, PR, contributor, file, review, and label in the Apache Airflow repository.
 
-- **Issue** nodes — one per GitHub issue with number, title, body embedding vector, and metadata.
-- **PR** nodes — one per pull request with number and metadata.
-- **RESOLVED_BY** relationships — connecting an Issue to the PR(s) that closed it.
+**Node types:**
 
-The database currently holds **322,867 nodes** covering all 12k issues and 43k PRs.
+| Label | Unique Key | Properties |
+|-------|-----------|------------|
+| `Issue` | `number` | title, body_truncated, created_at |
+| `PR` | `number` | title, body_truncated, merged_at |
+| `File` | `filename` | filename (full repo-relative path) |
+| `Review` | `id` | body, state, is_inline_comment, diff_hunk |
+| `User` | `login` | GitHub username |
+| `Label` | `name` | GitHub label string (e.g. `kind:bug`, `provider:cncf-kubernetes`) |
 
-### 3.2 Ingestion
+**Relationship types (11 total):**
 
-`ingest_graph_actual.py` handles the ingestion pipeline:
-1. Reads cleaned issue and PR JSONL files.
-2. Generates 384-dimensional sentence embeddings using `all-MiniLM-L6-v2`.
-3. Creates Neo4j nodes and RESOLVED_BY edges in batches.
+| Relationship | From → To | Meaning |
+|-------------|----------|--------|
+| `RESOLVED_BY` | Issue → PR | This PR closed the issue |
+| `TOUCHES` | PR → File | PR modified this file |
+| `REVIEWED_IN` | Review → PR | Review/comment belongs to this PR |
+| `APPLIES_TO` | Review → File | Inline comment targets this file |
+| `AUTHORED` | User → PR | User opened this PR |
+| `MERGED` | User → PR | User merged this PR |
+| `REVIEWED` | User → PR | User submitted a review on this PR |
+| `REPORTED` | User → Issue | User opened this issue |
+| `COMMENTED_ON` | User → Issue | User commented on this issue |
+| `HAS_LABEL` | Issue → Label | Issue carries this GitHub label |
+| `HAS_LABEL` | PR → Label | PR carries this GitHub label |
 
-`vectorize_issues.py` separately handles the vector embedding layer using Neo4j's built-in vector index for similarity search.
+**Full traversal pattern:**
+```
+(User)-[:REPORTED]->(Issue)-[:RESOLVED_BY]->(PR)-[:TOUCHES]->(File)
+                                                  ↑
+(User)-[:AUTHORED]----------------------------->(PR)<-[:REVIEWED]-(User)
+(User)-[:MERGED]------------------------------>(PR)
+(User)-[:COMMENTED_ON]---------------------->(Issue)
+(Issue)-[:HAS_LABEL]------------------------>(Label)
+(PR)-[:HAS_LABEL]--------------------------->(Label)
+(Review)-[:REVIEWED_IN]-------------------->(PR)
+(Review)-[:APPLIES_TO]-------------------->(File)
+```
+
+### 3.2 Ingestion Architecture
+
+`ingest_graph_actual.py` runs three sequential passes over the cleaned JSONL training data:
+
+**Pass 1 — `ingest_issues()`**
+- Source: `etl/training_data/issues_clean*.jsonl`
+- Creates `Issue` nodes (number, title, body_truncated, created_at).
+- Creates stub `PR` nodes and `RESOLVED_BY` edges for every linked PR number.
+- Batch size: 500 records.
+
+**Pass 2 — `ingest_prs()`**
+- Source: `etl/training_data/prs_clean*.jsonl`
+- Fills in full `PR` metadata (title, body_truncated, merged_at).
+- Creates `File` nodes and `TOUCHES` edges for every file in the PR diff.
+- Creates `Review` nodes (both full reviews and inline review comments) with `REVIEWED_IN` and `APPLIES_TO` edges.
+- Batch size: 200 records.
+
+**Pass 3 — `ingest_users_and_labels()`** *(added in latest update)*
+- Source: both JSONL files (second pass read).
+- Creates `User` nodes from `pr.user.login` (author), `pr.merged_by.login` (merger), `reviews[].user.login` (reviewers), `review_comments[].user.login` (inline comment authors), `issue.user.login` (reporter), `comments[].user.login` (commenters).
+- Creates `Label` nodes from `pr.labels[].name` and `issue.label_names[]`.
+- Wires all `AUTHORED`, `MERGED`, `REVIEWED`, `REPORTED`, `COMMENTED_ON`, `HAS_LABEL` relationships.
+- Batch size: 200 records (PRs) / 500 records (Issues).
+
+**Memory-safe deletion:** The `clear_graph()` function deletes the existing graph in batches of 10,000 relationships then 10,000 nodes (loop-until-empty) rather than a single `MATCH (n) DETACH DELETE n` transaction, preventing `MemoryPoolOutOfMemoryError` on large graphs.
+
+**Neo4j memory configuration** (`graphrag/docker-compose.yml`):
+```
+NEO4J_dbms_memory_heap_initial__size=2G
+NEO4J_dbms_memory_heap_max__size=6G
+NEO4J_dbms_memory_pagecache_size=2G
+NEO4J_dbms_memory_transaction_total_max=4G
+```
+
+`vectorize_issues.py` separately handles the vector embedding layer using Neo4j's built-in vector index for similarity search (384-dimensional `all-MiniLM-L6-v2` embeddings).
 
 ### 3.3 Runtime Retrieval
 
 The `graphrag_client.py` module (inside `autobot_vscode/local_orchestrator/`) exposes:
-- `get_candidate_files(issue_number, top_k=6)` — queries the vector index for issues similar to the current issue, then traverses RESOLVED_BY edges to extract the files changed in those PRs. Returns a ranked list of candidate files most likely relevant to this issue.
-- `get_neighbor_files(file_path, top_k=3)` — finds files that co-appeared in the same PR as the given file (co-modification graph traversal).
+- `get_candidate_files(issue_number, top_k=6)` — queries the vector index for issues similar to the current issue, then traverses `RESOLVED_BY → TOUCHES` edges to extract the files changed in those PRs. Returns a ranked list of candidate files most likely relevant to this issue.
+- `get_neighbor_files(file_path, top_k=3)` — finds files that co-appeared in the same PR as the given file (co-modification graph traversal via `TOUCHES`).
 - `similar_issues(query, top_k)` and `linked_prs_for_issues(issue_numbers)` — used by the Slack adhoc handler.
+
+### 3.4 Example GraphRAG Queries
+
+**Who fixed a bug and what files did they touch?**
+```cypher
+MATCH (u:User)-[:AUTHORED]->(p:PR)<-[:RESOLVED_BY]-(i:Issue)
+MATCH (p)-[:TOUCHES]->(f:File)
+RETURN u.login, p.number, i.title, collect(f.filename) LIMIT 10
+```
+
+**All Kubernetes provider bugs and their fixers:**
+```cypher
+MATCH (l:Label {name: "provider:cncf-kubernetes"})<-[:HAS_LABEL]-(i:Issue)
+-[:RESOLVED_BY]->(p:PR)<-[:AUTHORED]-(u:User)
+RETURN i.number, i.title, p.number, u.login
+```
+
+**Co-modified files (files that always change together):**
+```cypher
+MATCH (f1:File)<-[:TOUCHES]-(p:PR)-[:TOUCHES]->(f2:File)
+WHERE f1.filename < f2.filename
+RETURN f1.filename, f2.filename, count(p) AS co_changes
+ORDER BY co_changes DESC LIMIT 20
+```
 
 ---
 

@@ -52,8 +52,8 @@ def get_candidate_files(issue_number: int, top_k: int = 6) -> list[str]:
         with _get_driver().session() as s:
             result = s.run(
                 """
-                MATCH (i:Issue {number: $n})-[:LINKED_PR]->(pr:PR)-[:TOUCHES]->(f:File)
-                RETURN f.path AS path, count(*) AS freq
+                MATCH (i:Issue {number: $n})-[:RESOLVED_BY]->(pr:PR)-[:TOUCHES]->(f:File)
+                RETURN f.filename AS path, count(*) AS freq
                 ORDER BY freq DESC LIMIT $k
                 """,
                 n=issue_number,
@@ -72,9 +72,9 @@ def get_neighbor_files(file_path: str, top_k: int = 5) -> list[str]:
         with _get_driver().session() as s:
             result = s.run(
                 """
-                MATCH (:File {path: $p})<-[:TOUCHES]-(pr:PR)-[:TOUCHES]->(other:File)
-                WHERE other.path <> $p
-                RETURN other.path AS path, count(*) AS freq
+                MATCH (:File {filename: $p})<-[:TOUCHES]-(pr:PR)-[:TOUCHES]->(other:File)
+                WHERE other.filename <> $p
+                RETURN other.filename AS path, count(*) AS freq
                 ORDER BY freq DESC LIMIT $k
                 """,
                 p=file_path,
@@ -157,11 +157,13 @@ def linked_prs_for_issues(issue_numbers: list[int]) -> list[dict]:
         with _get_driver().session() as s:
             result = s.run(
                 """
-                MATCH (i:Issue)-[:LINKED_PR]->(pr:PR)
+                MATCH (i:Issue)-[:RESOLVED_BY]->(pr:PR)
                 WHERE i.number IN $nums
+                OPTIONAL MATCH (u:User)-[:AUTHORED]->(pr)
                 RETURN i.number AS issue_number, pr.number AS pr_number,
-                       pr.author AS author, pr.merged_at AS merged_at,
-                       pr.html_url AS pr_url, pr.changed_files AS changed_files
+                       u.login AS author, pr.merged_at AS merged_at,
+                       pr.title AS pr_title
+                ORDER BY pr.merged_at DESC
                 """,
                 nums=issue_numbers,
             )
@@ -174,8 +176,10 @@ def execute_cypher(query: str, limit: int = 20) -> list[dict]:
     """Execute a raw Cypher query against the Neo4j database (Read-Only)."""
     if not neo4j_available():
         return [{"error": "Neo4j is currently unreachable."}]
-    # Very basic read-only guardrail
-    if any(kw in query.upper() for kw in ["CREATE", "MERGE", "SET", "DELETE", "REMOVE", "DROP", "CALL db."]):
+    # Read-only guardrail — allow CALL db.index.* for vector/fulltext search, block all writes
+    query_upper = query.upper()
+    write_keywords = ["CREATE ", "MERGE ", " SET ", "DELETE ", "REMOVE ", "DROP "]
+    if any(kw in query_upper for kw in write_keywords):
         return [{"error": "Write operations are not permitted via this tool. Use read-only queries."}]
     try:
         # Enforce limit if not explicitly defined by LLM
@@ -184,6 +188,9 @@ def execute_cypher(query: str, limit: int = 20) -> list[dict]:
         
         with _get_driver().session(default_access_mode="READ") as s:
             result = s.run(query)
-            return [dict(r) for r in result]
+            data = [dict(r) for r in result]
+            if not data:
+                return [{"error": "Query returned 0 results. You likely hallucinated a relationship or property. STOP AND FIX IT! Rule 1: Use [:AUTHORED], NOT AUTHORED_BY. Rule 2: Use [:REVIEWED], NOT REVIEWED_BY. Rule 3: Use [:HAS_LABEL], NOT a .LABELS property. Rule 4: Use [:TOUCHES]->(File), NOT a .TOUCHES property."}]
+            return data
     except Exception as e:
         return [{"error": f"Cypher execution failed: {str(e)}"}]

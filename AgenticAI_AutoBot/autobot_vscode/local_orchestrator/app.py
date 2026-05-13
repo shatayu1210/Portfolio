@@ -354,34 +354,44 @@ def ollama_available() -> bool:
 
 
 def extract_json_object(text: str) -> dict[str, Any]:
-    """Extract a JSON object from text, handling markdown fences and raw JSON."""
+    """Extract a JSON object from text, handling markdown fences, raw JSON, and conversational wrappers."""
     text = text.strip()
-    # Try to find the first '{' and last '}'
-    start = text.find('{')
-    end = text.rfind('}')
     
-    if start != -1 and end != -1 and end > start:
-        json_str = text[start : end + 1]
+    # 1. Try to find markdown fences anywhere in the text
+    fence_match = re.search(r"```(?:json)?\s*\n([\s\S]*?)\n```", text)
+    if fence_match:
         try:
-            data = json.loads(json_str)
-            if isinstance(data, dict):
-                return data
-            # If it's a list, wrap it or handle it in the caller
-            return {"raw_list": data}
+            data = json.loads(fence_match.group(1).strip())
+            if isinstance(data, dict): return data
+            if isinstance(data, list): return {"calls": data}
         except json.JSONDecodeError:
             pass
 
-    # Fallback to simple load for cases like "```json\n...\n```"
-    fence = re.match(r"^```(?:json)?\s*\n([\s\S]*?)\n```\s*$", text)
-    if fence:
-        text = fence.group(1).strip()
-    
+    # 2. Try to extract an object { ... }
+    obj_match = re.search(r"(\{[\s\S]*\})", text)
+    if obj_match:
+        try:
+            data = json.loads(obj_match.group(1))
+            if isinstance(data, dict): return data
+        except json.JSONDecodeError:
+            pass
+
+    # 3. Try to extract an array [ ... ]
+    arr_match = re.search(r"(\[[\s\S]*\])", text)
+    if arr_match:
+        try:
+            data = json.loads(arr_match.group(1))
+            if isinstance(data, list): return {"calls": data}
+        except json.JSONDecodeError:
+            pass
+
+    # 4. Final fallback
     try:
         data = json.loads(text)
-        if isinstance(data, dict):
-            return data
-        return {"raw_list": data} if isinstance(data, list) else {"value": data}
-    except json.JSONDecodeError:
+        if isinstance(data, dict): return data
+        if isinstance(data, list): return {"calls": data}
+    except json.JSONDecodeError as e:
+        print(f"JSON Parse Error: {e} | Raw text: {text[:200]}")
         raise ValueError(f"Could not parse JSON from: {text[:200]}...")
 
 
@@ -1016,7 +1026,38 @@ try:
         )
         GITHUB_TOOLS["graphrag_execute_cypher"] = (
             lambda query: execute_cypher(str(query)),
-            "Execute a raw Cypher query against the Neo4j GitHub knowledge graph. Node Labels: Issue, PR, File, User. Relationships: LINKED_PR, TOUCHES, AUTHORED_BY, REVIEWED_BY. Args: query (str)",
+            """Execute a read-only Cypher query against the Neo4j GitHub knowledge graph.
+
+Schema (use EXACTLY these labels and relationship names):
+  Node Labels   : Issue {number, title, body_truncated, created_at}
+                  PR    {number, title, body_truncated, merged_at}
+                  File  {filename}
+                  User  {login}
+                  Label {name}
+                  Review {id, body, state, is_inline_comment}
+
+  Relationships : (Issue)-[:RESOLVED_BY]->(PR)
+                  (PR)-[:TOUCHES]->(File)
+                  (User)-[:AUTHORED]->(PR)
+                  (User)-[:MERGED]->(PR)
+                  (User)-[:REVIEWED]->(PR)
+                  (User)-[:REPORTED]->(Issue)
+                  (User)-[:COMMENTED_ON]->(Issue)
+                  (Issue)-[:HAS_LABEL]->(Label)
+                  (PR)-[:HAS_LABEL]->(Label)
+                  (Review)-[:REVIEWED_IN]->(PR)
+                  (Review)-[:APPLIES_TO]->(File)
+
+CRITICAL CYPHER RULES:
+1. ALWAYS use a colon for relationship types (e.g., `[:REVIEWED]`, not `[REVIEWED]`).
+2. Do NOT use `CALL db.index.vector` — just use standard `MATCH` and `WHERE` clauses.
+3. If searching for a label, use: `MATCH (l:Label {name: 'provider:cncf-kubernetes'})<-[:HAS_LABEL]-(i:Issue)`
+
+Example - top reviewers for Kubernetes bugs:
+  MATCH (l:Label {name: 'provider:cncf-kubernetes'})<-[:HAS_LABEL]-(i:Issue)-[:RESOLVED_BY]->(p:PR)<-[:REVIEWED]-(u:User)
+  RETURN u.login, count(DISTINCT p) AS reviews ORDER BY reviews DESC LIMIT 10
+
+Args: query (str) - a valid read-only Cypher query. Write ops are blocked.""",
         )
 except ImportError:
     pass  # neo4j driver not installed — skip GraphRAG tools
@@ -1093,122 +1134,158 @@ async def llm_adhoc_query_stream(chat_fn: Callable[[str, str], str], user_query:
         payload = json.dumps({"type": event_type, **data})
         return f"data: {payload}\n\n"
 
-    # Pass 0: Soft guardrail
-    yield yield_event("step", {"msg": "Checking query relevance..."})
-    await asyncio.sleep(0.01) # Yield to event loop
-    relevance = await asyncio.to_thread(chat_fn, GUARDRAIL_PROMPT, user_query)
-    relevance = relevance.strip().upper()
-    
-    if "NO" in relevance and "YES" not in relevance:
-        refusal_system = (
-            "You are AutoBot, an assistant dedicated strictly to the Apache Airflow repository. "
-            "The user's input was out of scope. "
-            "If they simply said hello or greeted you, warmly greet them back. "
-            "If they asked an unrelated question, politely and creatively decline to answer it. "
-            "In either case, concisely remind them that you are here to help with Airflow GitHub issues, PRs, or codebase queries. "
-            "Keep it under 3 sentences."
-        )
-        ans = await asyncio.to_thread(chat_fn, refusal_system, f"User question: {user_query}")
-        yield yield_event("done", {"answer": ans.strip(), "tools_called": [], "guardrail_blocked": True})
-        return
-
-    # Pass 1: Plan — filter tools based on query classification
-    yield yield_event("step", {"msg": "Planning tool execution..."})
-    await asyncio.sleep(0.01)
-
-    route = _classify_query(user_query)
-    if route == "graphrag":
-        active_tools = {k: v for k, v in GITHUB_TOOLS.items() if "graphrag" in k}
-        if not active_tools:
-            ans = "It looks like you're asking about historical or similar issues, which requires the GraphRAG database. However, the database is currently offline or unreachable. Please start the Neo4j instance to enable historical insights."
-            yield yield_event("done", {"answer": ans, "tools_called": [], "guardrail_blocked": True})
-            return
-        else:
-            yield yield_event("step", {"msg": "Digging through historical store..."})
-    elif route == "live":
-        active_tools = {k: v for k, v in GITHUB_TOOLS.items() if "graphrag" not in k}
-    else:
-        active_tools = GITHUB_TOOLS
-
-    tool_descriptions = "\n".join(f"- {name}: {desc}" for name, (_, desc) in active_tools.items())
-    plan_system = (
-        "You are a tool-calling planner for GitHub queries about apache/airflow.\n"
-        "Available tools:\n"
-        f"{tool_descriptions}\n\n"
-        "Given the user's question, output a JSON object with a 'calls' array.\n"
-        "Each call: {\"tool\": \"<name>\", \"args\": {\"<param>\": <value>}}.\n"
-        "Max 5 calls. If the question can be answered with fewer, use fewer.\n"
-        "Output JSON only — no commentary, no markdown fences."
-    )
-    raw_plan = await asyncio.to_thread(chat_fn, plan_system, user_query)
-
     try:
-        plan_data = extract_json_object(raw_plan)
-    except ValueError as e:
-        yield yield_event("error", {"msg": "Agent returned invalid JSON. Please rephrase the query or provide more context."})
-        return
-    calls = plan_data.get("calls", [])
-    if not isinstance(calls, list):
-        calls = []
-    # Only allow calls to tools that were in the active tool set for this route
-    calls = [c for c in calls if c.get("tool") in active_tools]
+        # Pass 0: Soft guardrail
+        yield yield_event("step", {"msg": "Checking query relevance..."})
+        await asyncio.sleep(0.01) # Yield to event loop
+        relevance = await asyncio.to_thread(chat_fn, GUARDRAIL_PROMPT, user_query)
+        relevance = relevance.strip().upper()
+        
+        if "NO" in relevance and "YES" not in relevance:
+            refusal_system = (
+                "You are AutoBot, an assistant dedicated strictly to the Apache Airflow repository. "
+                "The user's input was out of scope. "
+                "If they simply said hello or greeted you, warmly greet them back. "
+                "If they asked an unrelated question, politely and creatively decline to answer it. "
+                "In either case, concisely remind them that you are here to help with Airflow GitHub issues, PRs, or codebase queries. "
+                "Keep it under 3 sentences."
+            )
+            ans = await asyncio.to_thread(chat_fn, refusal_system, f"User question: {user_query}")
+            yield yield_event("done", {"answer": ans.strip(), "tools_called": [], "guardrail_blocked": True})
+            return
 
-    tool_results = []
-    tools_called = []
+        # Pass 1: Plan — filter tools based on query classification
+        yield yield_event("step", {"msg": "Planning tool execution..."})
+        await asyncio.sleep(0.01)
 
-    if not calls:
-        yield yield_event("step", {"msg": "No tools needed, answering directly..."})
-    else:
-        for call in calls:
-            tool_name = call.get("tool")
-            args = call.get("args", {})
-            if tool_name not in GITHUB_TOOLS:
-                continue
+        route = _classify_query(user_query)
+        if route == "graphrag":
+            active_tools = {k: v for k, v in GITHUB_TOOLS.items() if "graphrag" in k}
+            if not active_tools:
+                ans = "It looks like you're asking about historical or similar issues, which requires the GraphRAG database. However, the database is currently offline or unreachable. Please start the Neo4j instance to enable historical insights."
+                yield yield_event("done", {"answer": ans, "tools_called": [], "guardrail_blocked": True})
+                return
+            else:
+                yield yield_event("step", {"msg": "Digging through historical store..."})
+        elif route == "live":
+            active_tools = {k: v for k, v in GITHUB_TOOLS.items() if "graphrag" not in k}
+        else:
+            active_tools = GITHUB_TOOLS
 
-            msg = f"Executing {tool_name}..."
-            if "graphrag" in tool_name:
-                msg = "Digging through historical store..."
-            elif "gh_" in tool_name or tool_name.startswith("get_") or tool_name == "search_issues":
-                msg = "Querying live GitHub repository..."
-                
-            yield yield_event("step", {"msg": msg})
-            await asyncio.sleep(0.01)
+        tool_descriptions = "\n".join(f"- {name}: {desc}" for name, (_, desc) in active_tools.items())
+        plan_system = (
+            "You are a tool-calling planner for GitHub queries about apache/airflow.\n"
+            "Available tools:\n"
+            f"{tool_descriptions}\n\n"
+            "Given the user's question, output a JSON object with a 'calls' array.\n"
+            "Each call: {\"tool\": \"<name>\", \"args\": {\"<param>\": <value>}}.\n"
+            "Max 5 calls. If the question can be answered with fewer, use fewer.\n"
+            "Output JSON only — no commentary, no markdown fences."
+        )
+
+        max_tool_turns = 3
+        tool_results_history = []
+        tools_called_all = []
+        
+        current_user_query = user_query
+        
+        for turn in range(max_tool_turns):
+            if tool_results_history:
+                history_str = "\n".join(tool_results_history)
+                current_user_query = f"{user_query}\n\n[PREVIOUS TOOL RESULTS]\n{history_str}\n\nWARNING: A previous tool execution failed or returned an error. Review the error, fix your tool arguments (e.g., correct the Cypher schema relationships), and call the tool again. If you have successfully gathered enough data, output an empty calls array: {{\"calls\": []}}"
+
+            plan_data = None
+            max_json_retries = 3
+            last_json_error = ""
+            prompt_query = current_user_query
             
-            fn, _ = active_tools[tool_name]
-            try:
-                # Wrap sync call to avoid blocking
-                result = await asyncio.to_thread(fn, **args) if isinstance(args, dict) else await asyncio.to_thread(fn, args)
-                # Use compact JSON to save tokens, truncate to 4000 chars to prevent context flooding
-                result_str = json.dumps(result, separators=(',', ':'), default=str)[:4000]
-                tool_results.append(f"[{tool_name}] → {result_str} ... (truncated)")
-                tools_called.append(tool_name)
-            except Exception as e:
-                tool_results.append(f"[{tool_name}] → ERROR: {e}")
-                tools_called.append(f"{tool_name}(error)")
+            for attempt in range(max_json_retries):
+                raw_plan = await asyncio.to_thread(chat_fn, plan_system, prompt_query)
+                try:
+                    plan_data = extract_json_object(raw_plan)
+                    break
+                except ValueError as e:
+                    last_json_error = str(e)
+                    prompt_query = f"{current_user_query}\n\nWARNING: Your last attempt failed to parse as JSON with error: {last_json_error}. Please output strictly valid JSON."
+                    
+            if not plan_data:
+                yield yield_event("error", {"msg": f"Agent returned invalid JSON after {max_json_retries} retries. Last error: {last_json_error}"})
+                return
+                
+            calls = plan_data.get("calls", [])
+            if not isinstance(calls, list):
+                calls = []
+            calls = [c for c in calls if c.get("tool") in active_tools]
 
-    # Pass 2: Summarize
-    yield yield_event("step", {"msg": "Summarizing results..."})
-    await asyncio.sleep(0.01)
-    summary_system = (
-        "You are AutoBot, a helpful GitHub assistant for the Apache Airflow repository.\n"
-        "Answer the user's question using ONLY the provided tool results. DO NOT output raw JSON.\n"
-        "FORMATTING RULES (apply strictly):\n"
-        "- Convert all ISO timestamps (e.g. 2024-06-02T03:49:11Z) to 'MM/DD/YY at HH:MM AM/PM UTC' format.\n"
-        "- If any field like 'assignee' or 'merged_by' is null/None/empty, say 'nobody' instead of 'null'.\n"
-        "- Reference issues and PRs as #N (e.g. #66353).\n"
-        "- Be short, factual, and human-readable. One or two sentences max per fact.\n"
-        "- If the tool results do not contain enough data to answer, say so clearly."
-    )
-    summary_user = f"User question: {user_query}\n\nTool results:\n" + "\n\n".join(tool_results)
-    
-    answer = await asyncio.to_thread(chat_fn, summary_system, summary_user)
-    answer = _hyperlink_refs(answer)
+            if not calls:
+                if turn == 0:
+                    yield yield_event("step", {"msg": "No tools needed, answering directly..."})
+                break # Exit ReAct loop, ready to summarize
 
-    yield yield_event("done", {
-        "answer": answer,
-        "tools_called": tools_called,
-        "guardrail_blocked": False,
-    })
+            turn_has_errors = False
+            for call in calls:
+                tool_name = call.get("tool")
+                args = call.get("args", {})
+                
+                msg = f"Executing {tool_name}..."
+                if "graphrag" in tool_name:
+                    msg = "Digging through historical store..."
+                elif "gh_" in tool_name or tool_name.startswith("get_") or tool_name == "search_issues":
+                    msg = "Querying live GitHub repository..."
+                    
+                yield yield_event("step", {"msg": msg})
+                await asyncio.sleep(0.01)
+                
+                fn, _ = active_tools[tool_name]
+                try:
+                    result = await asyncio.to_thread(fn, **args) if isinstance(args, dict) else await asyncio.to_thread(fn, args)
+                    result_str = json.dumps(result, separators=(',', ':'), default=str)[:4000]
+                    tool_results_history.append(f"[{tool_name}] → {result_str}")
+                    tools_called_all.append(tool_name)
+                    # If the tool itself returned a controlled error string (like graphrag schema guardrail)
+                    if "error" in result_str.lower():
+                        turn_has_errors = True
+                except Exception as e:
+                    tool_results_history.append(f"[{tool_name}] → ERROR: {e}")
+                    tools_called_all.append(f"{tool_name}(error)")
+                    turn_has_errors = True
+                    
+            if not turn_has_errors:
+                break # All tools succeeded, exit ReAct loop
+
+        tool_results = tool_results_history
+        tools_called = tools_called_all
+
+        # Pass 2: Summarize
+        yield yield_event("step", {"msg": "Summarizing results..."})
+        await asyncio.sleep(0.01)
+        summary_system = (
+            "You are AutoBot, a helpful GitHub assistant for the Apache Airflow repository.\n"
+            "Answer the user's question using ONLY the provided tool results. DO NOT output raw JSON.\n"
+            "FORMATTING RULES (apply strictly):\n"
+            "- Convert all ISO timestamps (e.g. 2024-06-02T03:49:11Z) to 'MM/DD/YY at HH:MM AM/PM UTC' format.\n"
+            "- If any field like 'assignee' or 'merged_by' is null/None/empty, say 'nobody' instead of 'null'.\n"
+            "- Reference issues and PRs as #N (e.g. #66353).\n"
+            "- Be short, factual, and human-readable. One or two sentences max per fact.\n"
+            "- If the tool results do not contain enough data to answer, say so clearly."
+        )
+        summary_user = f"User question: {user_query}\n\nTool results:\n" + "\n\n".join(tool_results)
+        
+        answer = await asyncio.to_thread(chat_fn, summary_system, summary_user)
+        answer = _hyperlink_refs(answer)
+
+        yield yield_event("done", {
+            "answer": answer,
+            "tools_called": tools_called,
+            "guardrail_blocked": False,
+        })
+    except Exception as e:
+        error_msg = str(e)
+        if "503" in error_msg or "Service Unavailable" in error_msg:
+            error_msg = "LLM API is currently unavailable or paused."
+        elif "429" in error_msg or "quota" in error_msg.lower() or "rate" in error_msg.lower():
+            error_msg = "LLM API quota exceeded or rate limited."
+        yield yield_event("error", {"msg": f"Query failed: {error_msg}"})
 
 async def llm_plan_patch_stream(chat_fn: Callable[[str, str], str], n, repo, backend_label: str):
     def yield_event(event_type: str, data: dict):
@@ -2002,10 +2079,15 @@ async def orchestrate(request: Request):
             "You are an intent router for a GitHub assistant. "
             "Given the user's message, output ONLY a JSON object with 'intent' and 'issue_number' (or 'pr_number').\n"
             "Intents:\n"
-            "- 'plan_patch': user specifically asks to fix, patch, or write code for an issue.\n"
-            "- 'ask_issue': user just provides an issue number or asks to simply view/read it.\n"
-            "- 'ask_pr': user just provides a PR number or asks to simply view/read a PR.\n"
-            "- 'query': user asks a general question (e.g., 'who closed PR', 'status of issue', etc).\n"
+            "- 'plan_patch': user explicitly wants AutoBot to GENERATE or WRITE a code patch/fix right now. "
+            "  Keywords: 'generate a patch', 'write the fix', 'apply a fix', 'create a diff', 'patch issue'. "
+            "  DO NOT classify as plan_patch if the user is asking WHO fixed something, asking for reviewers, "
+            "  asking for analysis, or saying they themselves are about to fix something.\n"
+            "- 'ask_issue': user provides an issue number and wants to view/read issue details only.\n"
+            "- 'ask_pr': user provides a PR number and wants to view/read PR details only.\n"
+            "- 'query': EVERYTHING else — questions about history, contributors, reviewers, similar bugs, "
+            "  blast radius, who worked on something, file analysis, recommendations, GraphRAG lookups.\n"
+            "When in doubt between plan_patch and query, always choose 'query'.\n"
             "If an issue number is found, extract it as an integer in 'issue_number'. "
             "If a PR number is found for ask_pr, extract it as an integer in 'pr_number'.\n"
             "Output JSON only.\n"

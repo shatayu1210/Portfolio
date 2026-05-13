@@ -12,9 +12,10 @@ services:
       # Automatically install APOC and Graph Data Science plugins
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
       # Memory tuning for Graph operations
-      - NEO4J_dbms_memory_heap_initial__size=1G
-      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_memory_heap_initial__size=2G
+      - NEO4J_dbms_memory_heap_max__size=6G
       - NEO4J_dbms_memory_pagecache_size=2G
+      - NEO4J_dbms_memory_transaction_total_max=4G
       # Allow loading CSVs from the import folder
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_apoc_export_file_enabled=true

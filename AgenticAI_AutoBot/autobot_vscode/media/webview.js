@@ -97,7 +97,18 @@
   async function parseIntent(text) {
     text = text.trim();
 
-    // Attempt LLM-based intent detection
+    // 1. High-Confidence Query Filter (Deterministic)
+    // If it looks like a question or analysis request, force it to 'query'
+    const queryMarkers = /\b(who|which|how|what|why|where|recommend|suggest|reviewer|contributor|similar|blast radius|hotspot|active|stat|status|list)\b/i;
+    const fixMarkers = /\b(fix|patch|implement|generate|create a fix)\b/i;
+    
+    // If it has query markers AND doesn't have an explicit "fix this issue" imperative, force 'query'
+    if (queryMarkers.test(text) && !/^fix\b/i.test(text)) {
+      console.log("AUTOBOT: High-confidence query detected via pre-filter.");
+      return { intent: "query", text };
+    }
+
+    // 2. Attempt LLM-based intent detection
     try {
       const result = await callOrchestrate({ command: "detect_intent", text });
       if (result && result.intent) {
@@ -114,7 +125,8 @@
 
     // Fallback heuristic if LLM fails
     const numMatch = text.match(/#?(\d+)/);
-    const isFixRequest = /\b(fix|plan|analyze|patch|implement)\b/i.test(text);
+    // Only trigger plan_patch for explicit imperative patch requests, not conversational mentions of 'fix'
+    const isFixRequest = /\b(fix|patch|implement|apply a fix|generate a (patch|diff|fix)|write the fix)\s+(issue|#|for issue)?\s*#?\d+/i.test(text);
     const isPrRequest = /\bpr\b/i.test(text);
 
     if (numMatch) {
@@ -165,14 +177,14 @@
     inputEl.value = "";
     inputEl.style.height = "auto";
     inputEl.disabled = true; // Disable textbox
-    sendBtn.disabled = true;
     removeWelcome();
     appendUserMessage(raw);
 
-    // Switch to STOP mode
+    // Switch to STOP mode — enable the button so the ⏹ click is reachable
     setBusy(true);
     sendBtn.innerHTML = "⏹";
     sendBtn.classList.add("ab-btn-stop");
+    sendBtn.disabled = false; // Must be enabled so user can click to abort
 
     currentAbortController = new AbortController();
     const signal = currentAbortController.signal;
@@ -240,6 +252,16 @@
         await doPlanPatch(issueNum, repo, agentEl, signal);
       } else if (intent === "query") {
         await doQuery(text, agentEl, signal);
+
+        // ── CHAINED INTENT: If the query also asked for a fix/plan, trigger it now ──
+        const hasSecondaryFixRequest = /\b(plan a fix|fix it|implement a fix|generate a patch)\b/i.test(text);
+        if (hasSecondaryFixRequest && issueNum && repo) {
+          console.log("AUTOBOT: Chaining to Planner after Query completion.");
+          const chainStep = addStep(appendStepsContainer(agentEl), "Chaining to Planner for implementation...");
+          await delay(800);
+          markStepDone(chainStep);
+          await doPlanPatch(issueNum, repo, agentEl, signal);
+        }
       } else {
         const msg = `Oops, I didn't quite understand that...
 I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can help with GitHub issues, PRs, CI status, code reviews, and repository queries. I'm unable to assist with questions outside this scope.`;
@@ -296,6 +318,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let buffer = "";
+      let lastStepMsg = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -313,6 +336,8 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
             const data = JSON.parse(dataStr);
 
             if (data.type === "step") {
+              if (data.msg === lastStepMsg) continue;
+              lastStepMsg = data.msg;
               if (currentStep) markStepDone(currentStep);
               currentStep = addStep(stepsEl, data.msg);
               scrollToBottom();
@@ -331,6 +356,9 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
               }
               bubble.appendChild(card);
               scrollToBottom();
+            } else if (data.type === "error") {
+              if (currentStep) { markStepDone(currentStep, "❌"); currentStep = null; }
+              throw new Error(data.msg);
             }
           }
         }
@@ -404,6 +432,7 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
       let buffer = "";
+      let lastStepMsg = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -419,6 +448,8 @@ I am AutoBot, an assistant dedicated to the Apache Airflow repository. I can hel
             const data = JSON.parse(dataStr);
 
             if (data.type === "step") {
+              if (data.msg === lastStepMsg) continue;
+              lastStepMsg = data.msg;
               if (currentStep) markStepDone(currentStep);
               currentStep = addStep(stepsEl, data.msg);
               scrollToBottom();
