@@ -21,6 +21,10 @@ A multi-agent system designed to handle the entire lifecycle of software mainten
 
 ## 🛠️ Selected Projects
 
+### [Distributed Event-Driven Platform (UberEats Clone)](./Distributed_EventDriven_Platform)
+**Real-Time, High-Availability Consumer Ecosystem**
+A scalable food delivery platform (MERN) designed for high-throughput order processing. I implemented an event-driven architecture using **Kafka** to decouple order flows and **WebSockets** for sub-second real-time updates. The system is containerized and orchestrated on **AWS EKS** to ensure production-grade high availability.
+
 ### [AI CleanSQL](./AI_CleanSQL) ([🎥 Demo](./AI_CleanSQL/demo/CleanSQL_Demo.mp4))
 **Data-Quality-Aware SQL Generation**
 A research-backed project that generates "Robust SQL"—queries designed to handle messy, real-world data (nulls, outliers, duplicates) automatically. Features a custom fine-tuned model and a hybrid RAG system.
@@ -28,10 +32,6 @@ A research-backed project that generates "Robust SQL"—queries designed to hand
 ### [Finance Data Analytics](./Finance_Data_Analytics)
 **End-to-End Market Intelligence**
 An automated pipeline that transforms raw stock market data into actionable insights. Combines daily ETL via Airflow, technical indicator modeling with dbt, and 7-day price forecasting using Snowflake ML.
-
-### [UberEats Full-Stack Clone](./MERN_UberEats_Clone)
-**Scalable Consumer Ecosystem**
-A high-performance food delivery platform. I focused on creating a premium user experience while managing high-concurrency order flows using Kafka and real-time synchronization with WebSockets.
 
 ---
 
