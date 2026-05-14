@@ -1,111 +1,66 @@
-# UberEats Clone (MERN+Kafka+WebSocket+EKS)
+# 🍔 UberEats Full-Stack Clone
 
-## What Is This?
-This is a full-stack food delivery web app inspired by UberEats, built using the MERN stack (MongoDB, Express.js, React.js with Redux, and Node.js). It supports both Customers and Restaurant Owners as separate user roles.
-While the design takes inspiration from UberEats, most of the screens and interactions reflect my own creative spin and UI/UX thinking.
-The complete app was containerized and deployed on Amazon EKS using a t3.small EC2 instance with 2 nodes. Everything was tested to ensure reliability and responsiveness.
+A production-ready food delivery platform built with the MERN stack, featuring real-time tracking, distributed task handling with Kafka, and a high-performance cloud deployment.
 
-## Key Features
+![App Landing Page](./UI%20Snaps/Common/LandingPage.png)
 
-### Customer Experience
-- Easy signup and login
-- Browse restaurants and their menus
-- Add items to cart and place orders with a few clicks
-- Store Multiple Labelled Personal Addresses
-- Track your orders live in real-time
-- Mark favorite restaurants
-- Manage your profile with ease
+## ✨ Product Overview
+This project is more than just a clone; it's a deep-dive into building **highly user-centric intelligent solutions**. It features a dual-portal ecosystem for Customers and Restaurant Owners, designed with a focus on intuitive UI/UX and seamless real-time interactions.
 
-### Restaurant Owner Tools
-- Quick signup and authentication
-- Manage restaurant details and menu
-- Add, update or remove dishes or toggle their availability
-- View and fulfill incoming customer orders in real-time
+### 🍱 Customer Experience
+Designed for speed and clarity, the customer journey focuses on effortless discovery and conversion.
+- **Intuitive Discovery**: Browse restaurants with high-quality visual menus and real-time availability.
+- **Seamless Cart Management**: A streamlined checkout process with multiple saved addresses.
+- **Live Order Tracking**: Real-time status updates powered by WebSockets.
 
-## How It's Built
+### 📊 Restaurant Management
+A robust dashboard for business owners to manage operations with data-driven insights.
+- **Dynamic Menu Control**: Real-time updates to dishes, pricing, and availability.
+- **Performance Analytics**: Visual tracking of order volume and business health.
+- **Real-time Order Fulfullment**: Instant notifications for new orders via Kafka & Socket.IO.
 
-### Frontend
-- **React.js** for building reusable UI components
-- **Redux** for clean state management across components
-- **React Router** for smooth, route-based navigation
-- **Bootstrap** for responsive, and minimalistic styling
-- **JWT-based protected routes** for secure access control
+---
 
-### Backend
-- **Node.js + Express.js** powering RESTful APIs
-- **MongoDB Atlas with Mongoose** for offering flexible, evolving data models backed by built-in validations.
-- **JWT Auth** for secure login and role-based access
-- **Apache Kafka** to decouple high-traffic operations like order placement and updates
-- **Socket.IO (WebSocket)** for real-time updates on restaurant dashboards and customer order history
-- **Apache JMeter** to stress-test backend endpoints and validate their efficiency under concurrent load
-- **Cloudinary** for scalable media storage
-- **Apache JMeter** to stress-test vital backend endpoints and validate their efficiency under concurrent load
+## 🎨 UI Walkthrough
 
-## Project Organization
-- `Code/Frontend` - React app
-- `Code/Backend` - Express.js API server
-- `UI Snaps` - User Interface Screenshots
-- `Apache Jmeter` - Load testing script and configuration
-- `Docker` - Consisting of docker-compose.yml for containerizing the services(backend, frontend, zookeeper, kafka)
-- `Kubernetes` - Kubernetes deployment manifests(.yaml) for Amazon EKS/Minikube deployment
+### 🛍️ The Customer Journey
+| Home & Discovery | Restaurant Menus |
+| :---: | :---: |
+| ![Restaurants](./UI%20Snaps/Customer/Restaurants%20-%201.png) | ![Restaurant Detail](./UI%20Snaps/Customer/Restaurant%20Detail%20-%201.png) |
+| **Checkout & Cart** | **Order Tracking** |
+| ![Cart](./UI%20Snaps/Customer/Cart.png) | ![Order Detail](./UI%20Snaps/Customer/Customer%20-%20Order%20Detail.png) |
 
-## Design Philosophy
-This app isn’t just about CRUD — I focused a lot on scalability and performance too:
-- REST APIs are designed thoughtfully with clean URIs and consistent resource architecture
-- Mongoose models come with validation to ensure data integrity
-- Kafka + WebSocket architecture makes sure real-time updates and high-frequency operations don’t slow down the system
-- Only essential data is transmitted — especially important when you start simulating scale
-- Apache JMeter was used to simulate real-world load and validate backend efficiency
+### 📈 Restaurant Operations
+| Business Dashboard | Performance Analytics |
+| :---: | :---: |
+| ![Dashboard](./UI%20Snaps/Restaurant/Restaurant%20Dashboard.png) | ![Performance](./UI%20Snaps/Restaurant/Track%20Performance.png) |
 
-## Quick Start Guide
+---
 
-### Backend Setup
-1. Navigate to the Backend folder:
-   ```
-   cd Code/Backend
-   ```
-2. Install required packages:
-   ```
-   npm install
-   ```
-3. Create `.env` file with your settings:
-   ```
-   PORT=3000
-   JWT_SECRET=JWT_SECRET
-   MONGODB_URI=<uri>
-   CLOUDINARY_CLOUD_NAME=<>
-   CLOUDINARY_API_KEY=<>
-   CLOUDINARY_API_SECRET=<>
-   KAFKA_BROKER=localhost:9092
-   VITE_API_URL=http://localhost:3000
-   ```
-4. Start the server:
-   ```
-   node server.js
-   ```
+## 🏗️ System Architecture
+The application is built on a distributed architecture designed to handle high concurrency and ensure sub-second responsiveness.
 
-### Frontend Setup
-1. Navigate to the Frontend folder:
-   ```
-   cd Code/Frontend
-   ```
-2. Install required packages:
-   ```
-   npm install
-   ```
-3. Launch development server:
-   ```
-   npm run dev
-   ```
+![Architecture](./Architecture.jpg)
 
-## Future Plans
-- Add Stripe or PayPal for online payments
-- Build a driver portal for delivery tracking
-- Developed an advanced analytics dashboard for restaurants offering interactivity and granular controls
-- Create a mobile version (React Native or Flutter)
+### 💻 Tech Stack
+- **Frontend**: React.js, Redux, Bootstrap (Custom CSS for premium UI/UX).
+- **Backend**: Node.js, Express.js, MongoDB Atlas (Mongoose).
+- **Messaging**: Apache Kafka (Order decoupling).
+- **Real-time**: Socket.IO (WebSockets).
+- **Media**: Cloudinary (Image optimization & storage).
+- **Deployment**: Amazon EKS (Kubernetes), Docker.
+- **Testing**: Apache JMeter (Load & Stress Testing).
 
-## Contributing
-This is an individual project developed as a portfolio piece. The codebase is available for reference and educational purposes.
+---
 
-## License
-MIT License 
+## 🛠️ Key Technical Highlights
+- **Distributed Order Processing**: Used Kafka to decouple order placement from notification services, ensuring the system remains responsive during peak loads.
+- **Real-time Synchronization**: Implemented WebSockets to provide instant feedback to both customers and restaurant owners without manual refreshes.
+- **Cloud Native**: Fully containerized using Docker and orchestrated via Kubernetes on AWS EKS for horizontal scalability.
+- **Product-First Design**: Every interaction was stress-tested for friction, ensuring a user-centric experience that feels like a premium consumer app.
+
+---
+
+## 📬 Contact
+**Shatayu Thakur**
+[shatayuthakur12@gmail.com](mailto:shatayuthakur12@gmail.com) | [Portfolio](https://shatayuthakur.xyz)
