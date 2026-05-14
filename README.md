@@ -46,4 +46,3 @@ An automated pipeline that transforms raw stock market data into actionable insi
 I'm always looking to contribute to ambitious projects at the intersection of AI and Product.
 
 **Email**: [shatayuthakur12@gmail.com](mailto:shatayuthakur12@gmail.com)
-**Portfolio**: [shatayuthakur.xyz](https://shatayuthakur.xyz)
