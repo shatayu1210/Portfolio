@@ -15,7 +15,7 @@ An end-to-end multi-agent system that autonomously triages, plans, and patches c
 ---
 
 ## 🛠️ Other Projects
-### [AI_CleanSQL](./AI_CleanSQL) | [Finance_Data_Analytics](./Finance_Data_Analytics) | [MERN_UberEats_Clone](./MERN_UberEats_Clone)
+### [AI_CleanSQL](./AI_CleanSQL) ([🎥 Demo](./AI_CleanSQL/demo/CleanSQL_Demo.mp4)) | [Finance_Data_Analytics](./Finance_Data_Analytics) | [MERN_UberEats_Clone](./MERN_UberEats_Clone)
 
 ---
 

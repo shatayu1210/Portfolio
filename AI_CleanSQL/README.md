@@ -2,6 +2,9 @@
 
 Data-Quality-Aware SQL Generation from Natural Language
 
+## 🎥 Video Demo
+🚀 **Watch the system handle messy data in real-time:** [CleanSQL Demo Video](./demo/CleanSQL_Demo.mp4)
+
 ## What is CleanSQL?
 
 CleanSQL is a research project that tackles a real-world problem: generating SQL queries that actually work on messy, imperfect data. Most text-to-SQL systems assume your data is clean—but real datasets have missing values, outliers, duplicates, and inconsistencies.
