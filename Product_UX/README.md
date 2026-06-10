@@ -63,10 +63,10 @@ Screen recordings exported from **Adobe XD**. Each piece starts from a real prod
 
 | | |
 | :--- | :--- |
-| **Surface** | Desktop OS window management |
-| **User problem** | Default window sizing and placement shape first-use experience; small friction compounds across daily workflows |
-| **Product goal** | Improve predictability and efficiency for common window interactions |
-| **What I explored** | Default dimensions, snap behavior, and how the system communicates available window states |
+| **Surface** | Desktop OS window management (multi-window apps) |
+| **User problem** | Opening an app with several windows already in session either restores the first window opened or brings them all back at once — cluttered and unpredictable when you only need one specific view |
+| **Product goal** | Let users pin a default window per app so only that window opens every time, regardless of how many were left open previously |
+| **What I explored** | Default-window pinning, predictable launch behavior, and reducing restore clutter on app open |
 
 [🎥 Watch prototype](./prototypes/windows-default-window.mp4)
 
@@ -76,9 +76,7 @@ Screen recordings exported from **Adobe XD**. Each piece starts from a real prod
 
 **Files**: [`marketing/`](./marketing/) — brochure, email campaign visual
 
-Static collateral built in **Adobe Illustrator** for clear visual storytelling — brochures and email campaign assets. This is **supplementary** to the interaction work above: it shows I can translate product ideas into polished external-facing materials, which matters at early-stage startups where engineers often wear multiple hats.
-
-> **Note for reviewers**: If you're hiring for SWE/AI, prioritize the [interaction prototypes](#interaction-prototypes) and [shipped UI work](../Distributed_EventDriven_Platform#-ui-walkthrough) — those are the strongest signals for product-minded engineering. This section is here for completeness.
+Static collateral built in **Adobe Illustrator** — included here for completeness. The engineering-relevant work in this folder is the [interaction prototypes](#interaction-prototypes) above: how I identify user friction, explore interaction models, and iterate before writing production code.
 
 | Asset | File | Context |
 | :--- | :--- | :--- |
