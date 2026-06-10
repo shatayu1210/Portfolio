@@ -1,9 +1,9 @@
 # Shatayu Thakur
-### Full Stack AI Engineer & Product Designer
+### Full Stack AI Engineer *(with a creative edge)*
 
-I build intelligent, user-centric solutions that bridge the gap between complex backend engineering and intuitive human experiences. My work focuses on **Agentic AI**, **Scalable Data Systems**, and **High-Performance Full Stack Applications**.
+I build production-grade systems across **agentic AI**, **distributed architecture**, and **data engineering** — from multi-agent pipelines and fine-tuned models to Kafka-backed platforms and cloud-native deployments.
 
-With a natural eye for UI/UX and a deep background in distributed systems, I create products that are not just technically sound, but truly valuable to the people who use them.
+Alongside core engineering, I draw on proven experience in **data analytics** and **UI/UX** — sharpening product sense, data storytelling, and whether what I ship is technically sound *and* actually usable.
 
 ---
 
@@ -23,40 +23,39 @@ A multi-agent system designed to handle the entire lifecycle of software mainten
 
 ### [Distributed Event-Driven Platform (UberEats Clone)](./Distributed_EventDriven_Platform)
 **Real-Time, High-Availability Consumer Ecosystem**
-A scalable food delivery platform (MERN) designed for high-throughput order processing. I implemented an event-driven architecture using **Kafka** to decouple order flows and **WebSockets** for sub-second real-time updates. The system is containerized and orchestrated on **AWS EKS** to ensure production-grade high availability.
+A scalable food delivery platform (MERN) built for high-throughput order processing — event-driven architecture with **Kafka**, **WebSockets** for sub-second updates, and deployment on **AWS EKS**. Includes a full React frontend with a polished consumer and restaurant UI.
 
 ### [AI CleanSQL](./AI_CleanSQL) ([🎥 Demo](./AI_CleanSQL/demo/CleanSQL_Demo.mp4))
 **Data-Quality-Aware SQL Generation**
 A research-backed project that generates "Robust SQL"—queries designed to handle messy, real-world data (nulls, outliers, duplicates) automatically. Features a custom fine-tuned model and a hybrid RAG system.
 
 ### [Finance Data Analytics](./Finance_Data_Analytics)
-**End-to-End Market Intelligence**
-An automated pipeline that transforms raw stock market data into actionable insights. Combines daily ETL via Airflow, technical indicator modeling with dbt, and 7-day price forecasting using Snowflake ML.
+**End-to-End Data Engineering Pipeline**
+Production-grade market intelligence: daily ETL via Airflow, technical indicator modeling with dbt, 7-day price forecasting with Snowflake ML, and live dashboards in Superset.
 
 ### [Data-Driven Analysis: EV Charging Infrastructure](./Data_Driven_Analysis)
-**From Public Data to Product Strategy**
-A Power BI analysis of U.S. EV charging networks (DOE Alternative Fuels Data Center) surfacing gaps in sustainability, fast-charging coverage, and geographic equity — with data-backed recommendations including AI-driven expansion planning.
+**Analytics & Data Storytelling**
+A Power BI deep-dive into U.S. EV charging networks (DOE Alternative Fuels Data Center) — surfacing infrastructure gaps in sustainability, fast-charging coverage, and geographic equity, with data-backed recommendations for expansion planning.
 
 ---
 
-## 🎯 Product & User-Centric Thinking
+## 🎨 Creative Edge: Product Sense & UX
 
-I don't treat design as a separate skill — it's how I decide **what to build** and **whether it works for real people**. Before writing production code, I map user friction, prototype flows, and stress-test interactions so the systems I ship are intuitive, not just functional.
+Engineering is the core; this is the layer on top. I have hands-on experience prototyping interfaces (Adobe XD), shipping production UI (see the [UberEats walkthrough](./Distributed_EventDriven_Platform#-ui-walkthrough)), and framing data insights for real decisions — so the systems I build aren't just correct, they're considered from a user's perspective.
 
-This shows up in shipped work (see the [UberEats UI walkthrough](./Distributed_EventDriven_Platform#-ui-walkthrough)) and in exploratory product thinking across familiar platforms.
-
-[**Explore product & UX work →**](./Product_UX)
+[**See product & UX work →**](./Product_UX)
 
 ---
 
 ## 🧩 How I Work
-- **Intelligent by Design**: I don't just build features; I build agentic systems that can reason and adapt to complex environments.
-- **User-Centric by Default**: Technical excellence only matters if people can use what you build. I prototype in Adobe XD, iterate on flows, and design for clarity before and during implementation. [See how →](./Product_UX)
-- **Full Stack Ownership**: I'm comfortable moving across the entire stack—from fine-tuning LLMs and optimizing databases to crafting polished frontends and deploying on Kubernetes.
+- **Engineering First**: Agentic systems, distributed backends, ML pipelines, and full-stack delivery — built to scale and hold up in production.
+- **Data Depth**: Comfortable across the analytics stack — ETL orchestration, warehousing, modeling, forecasting, and visualization.
+- **Full Stack Ownership**: Fine-tuning LLMs, optimizing databases, building frontends, deploying on Kubernetes — end to end.
+- **Creative Edge**: Product intuition and UI/UX experience that inform *what* to build and *how* it should feel — without compromising technical rigor. [Examples →](./Product_UX)
 
 ---
 
 ## 📬 Let's Connect
-I'm always looking to contribute to ambitious projects at the intersection of AI and Product.
+I'm looking to contribute to ambitious engineering problems — especially where AI, data systems, and real-world product impact intersect.
 
 **Email**: [shatayuthakur12@gmail.com](mailto:shatayuthakur12@gmail.com)
