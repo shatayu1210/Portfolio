@@ -74,9 +74,9 @@ Screen recordings exported from **Adobe XD**. Each piece starts from a real prod
 
 ## Visual Communication
 
-**Files**: [`marketing/`](./marketing/) — brochure, email poster, event poster
+**Files**: [`marketing/`](./marketing/) — brochure, email campaign visual
 
-Static collateral built in **Adobe Illustrator** for clear visual storytelling — brochures, email campaigns, and event posters. This is **supplementary** to the interaction work above: it shows I can translate product ideas into polished external-facing materials, which matters at early-stage startups where engineers often wear multiple hats.
+Static collateral built in **Adobe Illustrator** for clear visual storytelling — brochures and email campaign assets. This is **supplementary** to the interaction work above: it shows I can translate product ideas into polished external-facing materials, which matters at early-stage startups where engineers often wear multiple hats.
 
 > **Note for reviewers**: If you're hiring for SWE/AI, prioritize the [interaction prototypes](#interaction-prototypes) and [shipped UI work](../Distributed_EventDriven_Platform#-ui-walkthrough) — those are the strongest signals for product-minded engineering. This section is here for completeness.
 
@@ -84,11 +84,10 @@ Static collateral built in **Adobe Illustrator** for clear visual storytelling �
 | :--- | :--- | :--- |
 | Brochure | [`brochure.png`](./marketing/brochure.png) | Multi-panel layout for structured product/event messaging |
 | Email campaign | [`email-poster.jpg`](./marketing/email-poster.jpg) | Single-focus visual for email and digital outreach |
-| Event poster | [`poster.png`](./marketing/poster.png) | High-impact poster for event promotion and awareness |
 
-| Brochure | Email Campaign | Event Poster |
-| :---: | :---: | :---: |
-| ![Brochure](./marketing/brochure.png) | ![Email poster](./marketing/email-poster.jpg) | ![Poster](./marketing/poster.png) |
+| Brochure | Email Campaign |
+| :---: | :---: |
+| ![Brochure](./marketing/brochure.png) | ![Email poster](./marketing/email-poster.jpg) |
 
 ---
 
