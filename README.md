@@ -35,9 +35,19 @@ An automated pipeline that transforms raw stock market data into actionable insi
 
 ---
 
+## 🎯 Product & User-Centric Thinking
+
+I don't treat design as a separate skill — it's how I decide **what to build** and **whether it works for real people**. Before writing production code, I map user friction, prototype flows, and stress-test interactions so the systems I ship are intuitive, not just functional.
+
+This shows up in shipped work (see the [UberEats UI walkthrough](./Distributed_EventDriven_Platform#-ui-walkthrough)) and in exploratory product thinking across familiar platforms.
+
+[**Explore product & UX work →**](./Product_UX)
+
+---
+
 ## 🧩 How I Work
 - **Intelligent by Design**: I don't just build features; I build agentic systems that can reason and adapt to complex environments.
-- **Product & UI/UX First**: I believe technical excellence is wasted without a great user experience. I design interfaces that make complex data accessible and intuitive.
+- **User-Centric by Default**: Technical excellence only matters if people can use what you build. I prototype in Adobe XD, iterate on flows, and design for clarity before and during implementation. [See how →](./Product_UX)
 - **Full Stack Ownership**: I'm comfortable moving across the entire stack—from fine-tuning LLMs and optimizing databases to crafting polished frontends and deploying on Kubernetes.
 
 ---
