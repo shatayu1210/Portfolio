@@ -33,6 +33,10 @@ A research-backed project that generates "Robust SQL"—queries designed to hand
 **End-to-End Market Intelligence**
 An automated pipeline that transforms raw stock market data into actionable insights. Combines daily ETL via Airflow, technical indicator modeling with dbt, and 7-day price forecasting using Snowflake ML.
 
+### [Data-Driven Analysis: EV Charging Infrastructure](./Data_Driven_Analysis)
+**From Public Data to Product Strategy**
+A Power BI analysis of U.S. EV charging networks (DOE Alternative Fuels Data Center) surfacing gaps in sustainability, fast-charging coverage, and geographic equity — with data-backed recommendations including AI-driven expansion planning.
+
 ---
 
 ## 🎯 Product & User-Centric Thinking
