@@ -9,13 +9,14 @@ Data-Quality-Aware SQL Generation from Natural Language
 
 Screens from the Streamlit demo — upload a dataset, ask a question in plain English, and get BASIC + ROBUST SQL with data-quality notes.
 
-| Landing | Query |
-| :---: | :---: |
-| ![CleanSQL landing page](./demo/landing.jpg) | ![Natural language query input](./demo/query.png) |
+### Landing
+<img src="./demo/landing.jpg" alt="CleanSQL landing page" width="100%" />
 
-| Results |
-| :---: |
-| ![Generated SQL with BASIC and ROBUST variants](./demo/result.png) |
+### Query
+<img src="./demo/query.png" alt="Natural language query input" width="100%" />
+
+### Results
+<img src="./demo/result.png" alt="Generated SQL with BASIC and ROBUST variants" width="100%" />
 
 ## What is CleanSQL?
 
